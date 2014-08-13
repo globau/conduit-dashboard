@@ -1,0 +1,66 @@
+#!/usr/bin/env perl
+# BEGIN { $ENV{MOJO_MODE} = 'production'; }
+use Mojolicious::Lite;
+
+use FindBin '$RealBin';
+use lib $RealBin;
+
+app->secret('!bteam!');
+
+get '/' => 'index';
+
+group {
+    under sub {
+        require BTeam::RPC;
+    };
+    get '/rpc/unanswered'   => sub { BTeam::RPC->unanswered(@_) };
+    get '/rpc/pending'      => sub { BTeam::RPC->pending(@_)    };
+    get '/rpc/needinfo'     => sub { BTeam::RPC->needinfo(@_)   };
+};
+
+app->start;
+__DATA__
+@@ index.html.ep
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>bteam dashboard</title>
+  <script src="http://yui.yahooapis.com/3.17.2/build/yui/yui-min.js"></script>
+  <script src="moment.js"></script>
+  <script src="dashboard.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      font-size: small;
+      background: url(noise.png) #666;
+    }
+    .yui3-datatable-table {
+      width: 100%;
+    }
+    .yui3-datatable-message-content {
+      background: #fff;
+    }
+    .yui3-skin-sam .yui3-datatable-caption {
+      color: #fff;
+      font-style: normal;
+      font-weight: bold;
+      font-size: small;
+    }
+    .id {
+      text-align: right;
+    }
+    .age {
+      white-space: nowrap;
+      text-align: right;
+    }
+  </style>
+</head>
+
+<body class="yui3-skin-sam">
+  <div id="unanswered"></div>
+  <div id="pending"></div>
+  <div id="needinfo"></div>
+</body>
+
+</html>
