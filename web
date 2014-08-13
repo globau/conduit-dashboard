@@ -16,6 +16,7 @@ group {
     get '/rpc/unanswered'   => sub { BTeam::RPC->unanswered(@_) };
     get '/rpc/pending'      => sub { BTeam::RPC->pending(@_)    };
     get '/rpc/needinfo'     => sub { BTeam::RPC->needinfo(@_)   };
+    get '/rpc/all'          => sub { BTeam::RPC->all(@_)        };
 };
 
 app->start;
@@ -37,6 +38,7 @@ __DATA__
     }
     .yui3-datatable-table {
       width: 100%;
+      max-width: 1024px;
     }
     .yui3-datatable-message-content {
       background: #fff;
@@ -50,9 +52,23 @@ __DATA__
     .id {
       text-align: right;
     }
+    .summary {
+        width: 100%;
+    }
     .age {
       white-space: nowrap;
       text-align: right;
+    }
+    #github {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+    #github a {
+      color: #888;
+    }
+    #github a:hover {
+      color: #fff;
     }
   </style>
 </head>
@@ -61,6 +77,10 @@ __DATA__
   <div id="unanswered"></div>
   <div id="pending"></div>
   <div id="needinfo"></div>
+  <div id="all"></div>
+  <div id="github">
+    <a href="https://github.com/globau/bteam-dashboard">source</a>
+  </div>
 </body>
 
 </html>

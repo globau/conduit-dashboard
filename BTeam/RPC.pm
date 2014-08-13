@@ -52,8 +52,13 @@ sub pending {
             next unless $bug->{cf_due_date};
         }
 
-        # must be owned
-        next if $bug->{assigned_to} eq 'nobody@mozilla.org';
+        # check the last commenter on admin bugs
+        if ($bug->{component} eq 'Administration') {
+            my $comment = $class->_last_comment($bug);
+            my $author = $comment->{author};
+            next unless grep { $author eq $_ } BTEAM;
+            $bug->{state_date} = $comment->{time};
+        }
 
         # skip needinfo
         foreach my $flag (@{ $bug->{flags} }) {
@@ -62,8 +67,6 @@ sub pending {
         delete $bug->{flags};
 
         my $comment = $class->_last_comment($bug);
-        #my $author = $comment->{author};
-        #next unless grep { $author eq $_ } BTEAM;
         $bug->{state_date} = $comment->{time};
 
         push @$result, $bug;
@@ -73,6 +76,32 @@ sub pending {
 }
 
 sub needinfo {
+    my ($class, $app) = @_;
+    my $result;
+
+    my $bugs = $class->_bugs();
+    BUG: foreach my $bug (@$bugs) {
+        foreach my $flag (@{ $bug->{flags} }) {
+            next unless $flag->{name} eq 'needinfo';
+            my $requestee = $flag->{requestee};
+            next BUG if grep { $requestee eq $_ } BTEAM;
+            $bug->{state_date} = $flag->{creation_date};
+            $bug->{needinfo} = $requestee;
+        }
+        next unless $bug->{state_date};
+        delete $bug->{flags};
+
+        push @$result, $bug;
+    }
+
+    $app->render( text => j($class->_prepare($result)), format => 'json' );
+}
+
+sub all {
+    my ($class, $app) = @_;
+
+    my $bugs = $class->_bugs();
+    $app->render( text => j($class->_prepare($bugs)), format => 'json' );
 }
 
 sub _bugs {
