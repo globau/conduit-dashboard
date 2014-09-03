@@ -6,12 +6,14 @@ use BTeam::Constants;
 use BTeam::Date;
 use Mojo::JSON qw(j);
 
-sub unanswered {
+sub pending {
     my ($class, $app) = @_;
     my $result;
 
     my $bugs = $class->_bugs();
     BUG: foreach my $bug (@$bugs) {
+        # skip assigned bugs
+        next if $bug->{assigned_to} ne 'nobody@mozilla.org';
 
         # a due_date means it has been answererd
         next if $bug->{cf_due_date};
@@ -25,13 +27,10 @@ sub unanswered {
         }
         delete $bug->{flags};
 
-        # check the last commenter on admin bugs
-        if ($bug->{component} eq 'Administration') {
-            my $comment = $class->_last_comment($bug);
-            my $author = $comment->{author};
-            next if grep { $author eq $_ } BTEAM;
-            $bug->{state_date} = $comment->{time};
-        }
+        # last comment
+        my $comment = $class->_last_comment($bug);
+        $bug->{last_comment_time} = $comment->{time};
+        $bug->{last_commenter} = $comment->{author};
 
         push @$result, $bug;
     }
@@ -39,26 +38,26 @@ sub unanswered {
     $app->render( text => j($class->_prepare($result)), format => 'json' );
 }
 
-sub pending {
+sub in_progress {
     my ($class, $app) = @_;
     my $result;
 
     my $bugs = $class->_bugs();
     BUG: foreach my $bug (@$bugs) {
-        next unless $bug->{status} eq 'NEW' or $bug->{status} eq 'ASSIGNED';
+        # skip unassigned bugs
+        next if
+            $bug->{assigned_to} eq 'nobody@mozilla.org'
+            && $bug->{cf_due_date} eq '';
 
         # due_date
         if ($bug->{component} eq 'Custom Bug Entry Forms') {
             next unless $bug->{cf_due_date};
         }
 
-        # check the last commenter on admin bugs
-        if ($bug->{component} eq 'Administration') {
-            my $comment = $class->_last_comment($bug);
-            my $author = $comment->{author};
-            next unless grep { $author eq $_ } BTEAM;
-            $bug->{state_date} = $comment->{time};
-        }
+        # last comment
+        my $comment = $class->_last_comment($bug);
+        $bug->{last_comment_time} = $comment->{time};
+        $bug->{last_commenter} = $comment->{author};
 
         # skip needinfo
         foreach my $flag (@{ $bug->{flags} }) {
@@ -75,7 +74,7 @@ sub pending {
     $app->render( text => j($class->_prepare($result)), format => 'json' );
 }
 
-sub needinfo {
+sub stalled {
     my ($class, $app) = @_;
     my $result;
 
@@ -85,10 +84,10 @@ sub needinfo {
             next unless $flag->{name} eq 'needinfo';
             my $requestee = $flag->{requestee};
             next BUG if grep { $requestee eq $_ } BTEAM;
-            $bug->{state_date} = $flag->{creation_date};
+            $bug->{needinfo_time} = $flag->{creation_date};
             $bug->{needinfo} = $requestee;
         }
-        next unless $bug->{state_date};
+        next unless $bug->{needinfo};
         delete $bug->{flags};
 
         push @$result, $bug;
@@ -128,15 +127,14 @@ sub _prepare {
     # fix dates
     my $now = time();
     foreach my $bug (@$bugs) {
-        $bug->{state_date} //= $bug->{creation_time};
-        foreach my $field (qw(creation_time state_date)) {
-            next unless exists $bug->{$field};
+        foreach my $field (qw(creation_time cf_due_date last_comment_time needinfo_time)) {
+            next unless exists $bug->{$field} && $bug->{$field};
             $bug->{$field . '_epoch'} = BTeam::Date->new($bug->{$field})->epoch;
             $bug->{$field . '_age'} = $now - $bug->{$field . '_epoch'};
         }
     }
 
-    return [ sort { $a->{state_date_epoch} <=> $b->{state_date_epoch} } @$bugs ];
+    return $bugs;
 }
 
 1;

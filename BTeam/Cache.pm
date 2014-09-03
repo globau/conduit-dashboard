@@ -4,7 +4,7 @@ use strict;
 use FindBin qw($RealBin);
 use Mojo::Util qw(md5_sum slurp spurt);
 
-use constant LIFETIME_MINUTES => 30;
+use constant LIFETIME_MINUTES => 5;
 
 my $_instance;
 sub instance {

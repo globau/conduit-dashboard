@@ -13,10 +13,10 @@ group {
     under sub {
         require BTeam::RPC;
     };
-    get '/rpc/unanswered'   => sub { BTeam::RPC->unanswered(@_) };
-    get '/rpc/pending'      => sub { BTeam::RPC->pending(@_)    };
-    get '/rpc/needinfo'     => sub { BTeam::RPC->needinfo(@_)   };
-    get '/rpc/all'          => sub { BTeam::RPC->all(@_)        };
+    get '/rpc/pending'      => sub { BTeam::RPC->pending(@_)     };
+    get '/rpc/in_progress'  => sub { BTeam::RPC->in_progress(@_) };
+    get '/rpc/stalled'      => sub { BTeam::RPC->stalled(@_)     };
+    get '/rpc/all'          => sub { BTeam::RPC->all(@_)         };
 };
 
 app->start;
@@ -43,8 +43,15 @@ __DATA__
     .yui3-datatable-message-content {
       background: #fff;
     }
-    .yui3-skin-sam .yui3-datatable-caption {
+    .table_title {
       color: #fff;
+      font-style: normal;
+      font-weight: bold;
+      font-size: large;
+      text-transform: uppercase;
+    }
+    .table_caption {
+      color: #ddd;
       font-style: normal;
       font-weight: bold;
       font-size: small;
@@ -53,9 +60,9 @@ __DATA__
       text-align: right;
     }
     .summary {
-        width: 100%;
+      width: 100%;
     }
-    .age {
+    .duration {
       white-space: nowrap;
       text-align: right;
     }
@@ -65,7 +72,7 @@ __DATA__
       right: 10px;
     }
     #github a {
-      color: #888;
+      color: #bbb;
     }
     #github a:hover {
       color: #fff;
@@ -74,9 +81,9 @@ __DATA__
 </head>
 
 <body class="yui3-skin-sam">
-  <div id="unanswered"></div>
   <div id="pending"></div>
-  <div id="needinfo"></div>
+  <div id="in_progress"></div>
+  <div id="stalled"></div>
   <div id="all"></div>
   <div id="github">
     <a href="https://github.com/globau/bteam-dashboard">source</a>
