@@ -16,6 +16,7 @@ group {
     get '/rpc/pending'      => sub { BTeam::RPC->pending(@_)     };
     get '/rpc/in_progress'  => sub { BTeam::RPC->in_progress(@_) };
     get '/rpc/stalled'      => sub { BTeam::RPC->stalled(@_)     };
+    get '/rpc/infra'        => sub { BTeam::RPC->infra(@_)       };
     get '/rpc/all'          => sub { BTeam::RPC->all(@_)         };
 };
 
@@ -81,10 +82,6 @@ __DATA__
 </head>
 
 <body class="yui3-skin-sam">
-  <div id="pending"></div>
-  <div id="in_progress"></div>
-  <div id="stalled"></div>
-  <div id="all"></div>
   <div id="github">
     <a href="https://github.com/globau/bteam-dashboard">source</a>
   </div>
