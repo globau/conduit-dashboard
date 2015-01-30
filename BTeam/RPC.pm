@@ -10,7 +10,11 @@ sub pending {
     my ($class, $app) = @_;
     my $result;
 
-    my $bugs = $class->_bugs(['Administration', 'Custom Bug Entry Forms']);
+    my $bugs = $class->_bugs([
+        'Administration',
+        'Custom Bug Entry Forms',
+        'Extensions: MozProjectReview',
+    ]);
     BUG: foreach my $bug (@$bugs) {
         # skip assigned bugs
         next if $bug->{assigned_to} ne 'nobody@mozilla.org';
@@ -42,7 +46,12 @@ sub in_progress {
     my ($class, $app) = @_;
     my $result;
 
-    my $bugs = $class->_bugs(['Administration', 'Custom Bug Entry Forms', 'Infrastructure']);
+    my $bugs = $class->_bugs([
+        'Administration',
+        'Custom Bug Entry Forms',
+        'Extensions: MozProjectReview',
+        'Infrastructure',
+    ]);
     BUG: foreach my $bug (@$bugs) {
         # skip unassigned bugs
         next if
@@ -73,7 +82,11 @@ sub stalled {
     my ($class, $app) = @_;
     my $result;
 
-    my $bugs = $class->_bugs(['Administration', 'Custom Bug Entry Forms']);
+    my $bugs = $class->_bugs([
+        'Administration',
+        'Custom Bug Entry Forms',
+        'Extensions: MozProjectReview',
+    ]);
     BUG: foreach my $bug (@$bugs) {
         foreach my $flag (@{ $bug->{flags} }) {
             next unless $flag->{name} eq 'needinfo';
@@ -134,7 +147,12 @@ sub infra {
 sub all {
     my ($class, $app) = @_;
 
-    my $bugs = $class->_bugs(['Administration', 'Custom Bug Entry Forms', 'Infrastructure']);
+    my $bugs = $class->_bugs([
+        'Administration',
+        'Custom Bug Entry Forms',
+        'Extensions: MozProjectReview',
+        'Infrastructure',
+    ]);
     $app->render( text => j($class->_prepare($bugs)), format => 'json' );
 }
 

@@ -32,6 +32,7 @@ YUI().use(['datasource', 'datatable', 'datatable-sort'], function(Y) {
     switch (o.value) {
       case 'Administration': return 'admin';
       case 'Custom Bug Entry Forms': return 'form';
+      case 'Extensions: MozProjectReview': return 'kickoff';
       case 'Infrastructure': return 'infra';
       default: return '?';
     }
