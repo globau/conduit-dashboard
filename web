@@ -67,22 +67,24 @@ __DATA__
       white-space: nowrap;
       text-align: right;
     }
-    #github {
+    #annotation {
       position: absolute;
       top: 10px;
       right: 10px;
+      text-align: right;
     }
-    #github a {
+    #annotation, #annotation a {
       color: #bbb;
     }
-    #github a:hover {
+    #annotation a:hover {
       color: #fff;
     }
   </style>
 </head>
 
 <body class="yui3-skin-sam">
-  <div id="github">
+  <div id="annotation">
+    <span id="updated"></span><br>
     <a href="https://github.com/globau/bteam-dashboard">source</a>
   </div>
 </body>

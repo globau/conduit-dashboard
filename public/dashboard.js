@@ -263,4 +263,7 @@ YUI().use(['datasource', 'datatable', 'datatable-sort'], function(Y) {
       }
     ]
   );
+
+  window.setInterval(function() { location.reload(); }, 1000 * 60 * 60);
+  document.getElementById('updated').innerHTML = new Date().toLocaleString();
 });
