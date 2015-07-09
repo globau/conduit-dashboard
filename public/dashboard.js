@@ -47,7 +47,7 @@ YUI().use(['datasource', 'datatable', 'datatable-sort'], function(Y) {
   }
 
   function format_duration(o) {
-    return o.value ? moment.duration(o.value, 'seconds').humanize() : '-';
+    return o.value ? timeAgo(o.value) : '-';
   }
 
   init_table(
@@ -267,3 +267,24 @@ YUI().use(['datasource', 'datatable', 'datatable-sort'], function(Y) {
   window.setInterval(function() { location.reload(); }, 1000 * 60 * 60);
   document.getElementById('updated').innerHTML = new Date().toLocaleString();
 });
+
+function timeAgo(param) {
+  var ss = param.constructor === Date ? Math.round((new Date() - param) / 1000) : param;
+  var mm = Math.round(ss / 60),
+      hh = Math.round(mm / 60),
+      dd = Math.round(hh / 24),
+      mo = Math.round(dd / 30),
+      yy = Math.round(mo / 12);
+  if (ss < 10) return 'just now';
+  if (ss < 45) return ss + ' seconds';
+  if (ss < 90) return 'a minute';
+  if (mm < 45) return mm + ' minutes';
+  if (mm < 90) return 'an hour';
+  if (hh < 24) return hh + ' hours';
+  if (hh < 36) return 'a day';
+  if (dd < 30) return dd + ' days';
+  if (dd < 45) return 'a month';
+  if (mo < 12) return mo + ' months';
+  if (mo < 18) return 'a year';
+  return yy + ' years';
+}
