@@ -1,5 +1,5 @@
 YUI().use(['datasource', 'datatable', 'datatable-sort'], function(Y) {
-  function init_table(id, caption, sort_by, columns) {
+  function init_table(id, caption, sort_by, columns, callback) {
     var ds = new Y.DataSource.IO({
       source: 'http://glob.uno/bteam/rpc/' + id
     });
@@ -18,11 +18,15 @@ YUI().use(['datasource', 'datatable', 'datatable-sort'], function(Y) {
       columns: columns,
       sortBy: sort_by
     });
+    table.set('strings.emptyMessage', 'Zarro Boogs Found');
     table.plug(Y.Plugin.DataTableDataSource, {
       datasource: ds
     });
     table.render('#' + id).showMessage('loadingMessage');
     table.datasource.load();
+    if (callback) {
+        ds.after('response', callback);
+    }
     return table;
   }
 
@@ -97,7 +101,12 @@ YUI().use(['datasource', 'datatable', 'datatable-sort'], function(Y) {
         className: 'duration',
         formatter: format_duration
       }
-    ]
+    ],
+    function(a) {
+        if (a.response.results.length > 0) {
+            document.title += ' (' + a.response.results.length + ')';
+        }
+    }
   );
 
   init_table(
