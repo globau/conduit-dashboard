@@ -14,7 +14,9 @@ YUI().use(['datasource', 'datatable', 'datatable-sort'], function(Y) {
     document.body.appendChild(container);
     var table = new Y.DataTable({
       caption: '<div class="table_title">' + id.replace('_', ' ') + '</div>' +
-               '<div class="table_caption">' + Y.Escape.html(caption) + '</div>',
+               '<div class="table_caption">' + Y.Escape.html(caption) +
+               '<span class="table_count" id="' + id + '_count"></span>' +
+               '</div>',
       columns: columns,
       sortBy: sort_by
     });
@@ -24,6 +26,14 @@ YUI().use(['datasource', 'datatable', 'datatable-sort'], function(Y) {
     });
     table.render('#' + id).showMessage('loadingMessage');
     table.datasource.load();
+    ds.after('response', function(a) {
+        var el = document.getElementById(id + '_count');
+        if (a.response.results.length === 0) {
+            el.innerHTML = '';
+        } else {
+            el.innerHTML = ' : ' + a.response.results.length + ' bug' + (a.response.results.length === 1 ? '' : 's');
+        }
+    });
     if (callback) {
         ds.after('response', callback);
     }
@@ -34,11 +44,9 @@ YUI().use(['datasource', 'datatable', 'datatable-sort'], function(Y) {
 
   function format_component(o) {
     switch (o.value) {
-      case 'Administration': return 'admin';
-      case 'Custom Bug Entry Forms': return 'form';
-      case 'Extensions: MozProjectReview': return 'kickoff';
-      case 'Infrastructure': return 'infra';
-      default: return '?';
+      case 'Custom Bug Entry Forms': return 'Bug Forms';
+      case 'Extensions: Other': return o.value;
+      default: return o.value.replace('Extensions: ', '');
     }
   }
 
@@ -56,7 +64,7 @@ YUI().use(['datasource', 'datatable', 'datatable-sort'], function(Y) {
 
   init_table(
     'pending',
-    'Unassigned bugs',
+    'Unassigned bugs (time critical components)',
     { last_comment_time_age: 'desc'},
     [
       {
@@ -77,6 +85,7 @@ YUI().use(['datasource', 'datatable', 'datatable-sort'], function(Y) {
         key: 'component',
         sortable: true,
         label: 'Comp',
+        className: 'component',
         formatter: format_component
       },
       {
@@ -111,7 +120,7 @@ YUI().use(['datasource', 'datatable', 'datatable-sort'], function(Y) {
 
   init_table(
     'in_progress',
-    'Assigned bugs being worked on',
+    'Assigned bugs being worked on (time critical components)',
     { last_comment_time_age: 'desc' },
     [
       {
@@ -138,6 +147,7 @@ YUI().use(['datasource', 'datatable', 'datatable-sort'], function(Y) {
         key: 'component',
         sortable: true,
         label: 'Comp',
+        className: 'component',
         formatter: format_component
       },
       {
@@ -169,7 +179,7 @@ YUI().use(['datasource', 'datatable', 'datatable-sort'], function(Y) {
 
   init_table(
     'stalled',
-    'Bugs waiting on more information',
+    'Bugs waiting on more information (all components)',
     { needinfo_time_age: 'desc' },
     [
       {
@@ -196,6 +206,7 @@ YUI().use(['datasource', 'datatable', 'datatable-sort'], function(Y) {
         key: 'component',
         sortable: true,
         label: 'Comp',
+        className: 'component',
         formatter: format_component
       },
       {
@@ -216,6 +227,57 @@ YUI().use(['datasource', 'datatable', 'datatable-sort'], function(Y) {
         key: 'needinfo_time_age',
         parse: 'number',
         label: 'Age',
+        sortable: true,
+        className: 'duration',
+        formatter: format_duration
+      }
+    ]
+  );
+
+  init_table(
+    'in_dev',
+    'Assigned bugs with patches (all components)',
+    { last_comment_time_age: 'desc' },
+    [
+      {
+        key: 'id',
+        parse: 'number',
+        label: 'ID',
+        sortable: true,
+        allowHTML: true,
+        className: 'id',
+        formatter: format_bug
+      },
+      {
+        key: 'summary',
+        label: 'Summary',
+        className: 'summary'
+      },
+      {
+        key: 'assigned_to',
+        label: 'Owner',
+        sortable: true,
+        formatter: format_user
+      },
+      {
+        key: 'component',
+        sortable: true,
+        label: 'Comp',
+        className: 'component',
+        formatter: format_component
+      },
+      {
+        key: 'creation_time_age',
+        parse: 'number',
+        label: 'Created',
+        sortable: true,
+        className: 'duration',
+        formatter: format_duration
+      },
+      {
+        key: 'last_comment_time_age',
+        parse: 'number',
+        label: 'Commented',
         sortable: true,
         className: 'duration',
         formatter: format_duration

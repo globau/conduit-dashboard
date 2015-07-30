@@ -31,15 +31,12 @@ sub pending {
         }
         delete $bug->{flags};
 
-        # last comment
-        my $comment = $class->_last_comment($bug);
-        $bug->{last_comment_time} = $comment->{time};
-        $bug->{last_commenter} = $comment->{author};
-
         push @$result, $bug;
     }
 
-    $app->render( text => j($class->_prepare($result)), format => 'json' );
+    $class->_last_comments($result);
+    $class->_prepare($result);
+    $app->render( text => j($result), format => 'json' );
 }
 
 sub in_progress {
@@ -58,10 +55,32 @@ sub in_progress {
             $bug->{assigned_to} eq 'nobody@mozilla.org'
             && $bug->{cf_due_date} eq '';
 
-        # last comment
-        my $comment = $class->_last_comment($bug);
-        $bug->{last_comment_time} = $comment->{time};
-        $bug->{last_commenter} = $comment->{author};
+        # skip needinfo
+        foreach my $flag (@{ $bug->{flags} }) {
+            next BUG if $flag->{name} eq 'needinfo';
+        }
+        delete $bug->{flags};
+
+        push @$result, $bug;
+    }
+
+    $class->_last_comments($result);
+    foreach my $bug (@$result) {
+        $bug->{state_date} = $bug->{last_comment_time};
+    }
+    $class->_prepare($result);
+
+    $app->render( text => j($result), format => 'json' );
+}
+
+sub in_dev {
+    my ($class, $app) = @_;
+    my $result;
+
+    my $bugs;
+    BUG: foreach my $bug (@{ $class->_bugs_with_attachments() }) {
+        # skip unassigned bugs
+        next if $bug->{assigned_to} eq 'nobody@mozilla.org';
 
         # skip needinfo
         foreach my $flag (@{ $bug->{flags} }) {
@@ -69,24 +88,25 @@ sub in_progress {
         }
         delete $bug->{flags};
 
-        my $comment = $class->_last_comment($bug);
-        $bug->{state_date} = $comment->{time};
+        push @$bugs, $bug;
+    }
 
+    $class->_last_comments($bugs);
+    $class->_prepare($bugs);
+    foreach my $bug (@$bugs) {
+        next if $bug->{last_comment_time_age} < 60 * 60 * 24 * 14;
+        $bug->{state_date} = $bug->{last_comment_time};
         push @$result, $bug;
     }
 
-    $app->render( text => j($class->_prepare($result)), format => 'json' );
+    $app->render( text => j($result), format => 'json' );
 }
 
 sub stalled {
     my ($class, $app) = @_;
     my $result;
 
-    my $bugs = $class->_bugs([
-        'Administration',
-        'Custom Bug Entry Forms',
-        'Extensions: MozProjectReview',
-    ]);
+    my $bugs = $class->_bugs([]);
     BUG: foreach my $bug (@$bugs) {
         foreach my $flag (@{ $bug->{flags} }) {
             next unless $flag->{name} eq 'needinfo';
@@ -122,11 +142,6 @@ sub infra {
             next if @$depends_on_bugs == @{ $bug->{depends_on} };
         }
 
-        # last comment
-        my $comment = $class->_last_comment($bug);
-        $bug->{last_comment_time} = $comment->{time};
-        $bug->{last_commenter} = $comment->{author};
-
         # skip needinfo
         foreach my $flag (@{ $bug->{flags} }) {
             next unless $flag->{name} eq 'needinfo';
@@ -135,13 +150,16 @@ sub infra {
         }
         delete $bug->{flags};
 
-        my $comment = $class->_last_comment($bug);
-        $bug->{state_date} = $comment->{time};
-
         push @$result, $bug;
     }
 
-    $app->render( text => j($class->_prepare($result)), format => 'json' );
+    $class->_last_comments($result);
+    foreach my $bug (@$result) {
+        $bug->{state_date} = $bug->{last_comment_time};
+    }
+    $class->_prepare($result);
+
+    $app->render( text => j($result), format => 'json' );
 }
 
 sub all {
@@ -176,13 +194,57 @@ sub _bugs {
     });
 }
 
-sub _last_comment {
-    my ($class, $bug) = @_;
+sub _bugs_with_attachments {
+    my $all_bugs = BTeam::Bugzilla->search({
+        include_fields  => join(',', qw(
+            id
+            summary
+            creation_time
+            cf_due_date
+            component
+            flags
+            status
+            assigned_to
+            depends_on
+        )),
+        product         => 'bugzilla.mozilla.org',
+        bug_status      => '__open__',
+        f1              => 'attachments.ispatch',
+        o1              => 'equals',
+        v1              => '1',
+    });
+
+    # exclude bugs that only have obsolete attachments
+    my $attachments = BTeam::Bugzilla->attachments(
+        {
+            bug_ids         => [ map { $_->{id} } @$all_bugs ],
+            include_fields  => 'is_obsolete',
+        }
+    );
+    my $bugs = [];
+    foreach my $bug (@$all_bugs) {
+        my $obsolete_count = 0;
+        foreach my $attachment (@{ $attachments->{$bug->{id}} }) {
+            $obsolete_count++ if $attachment->{is_obsolete};
+        }
+        next if $obsolete_count == scalar @{ $attachments->{$bug->{id}} };
+        push @$bugs, $bug;
+    }
+    return $bugs;
+}
+
+sub _last_comments {
+    my ($class, $bugs) = @_;
     my $comments = BTeam::Bugzilla->comments({
-        bug_id          => $bug->{id},
+        bug_ids => [ map { $_->{id} } @$bugs ],
         include_fields  => ['author', 'time'],
     });
-    return pop @$comments;
+    foreach my $bug (@$bugs) {
+        next unless exists $comments->{$bug->{id}};
+        my $comment = pop @{ $comments->{$bug->{id}}->{comments} };
+        $bug->{last_comment_time} = $comment->{time};
+        $bug->{last_commenter} = $comment->{author};
+    }
 }
 
 sub _prepare {

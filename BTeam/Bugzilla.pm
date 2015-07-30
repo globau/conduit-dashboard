@@ -41,10 +41,30 @@ sub search {
     return $class->instance->rest('bug', $params)->{bugs};
 }
 
+sub attachments {
+    my ($class, $params) = @_;
+    if (exists $params->{bug_id}) {
+        my $bug_id = delete $params->{bug_id};
+        return $class->instance->rest("bug/$bug_id/attachment", $params)->{bugs}->{$bug_id};
+    } else {
+        my $ids = delete $params->{bug_ids};
+        my $id = shift @$ids;
+        $params->{ids} = $ids;
+        return $class->instance->rest("bug/$id/attachment", $params)->{bugs};
+    }
+}
+
 sub comments {
     my ($class, $params) = @_;
-    my $bug_id = delete $params->{bug_id};
-    return $class->instance->rest("bug/$bug_id/comment", $params)->{bugs}->{$bug_id}->{comments};
+    if (exists $params->{bug_id}) {
+        my $bug_id = delete $params->{bug_id};
+        return $class->instance->rest("bug/$bug_id/comment", $params)->{bugs}->{$bug_id}->{comments};
+    } else {
+        my $ids = delete $params->{bug_ids};
+        my $id = shift @$ids;
+        $params->{ids} = $ids;
+        return $class->instance->rest("bug/$id/comment", $params)->{bugs};
+    }
 }
 
 1;
