@@ -35,7 +35,7 @@ sub pending {
     }
 
     $class->_last_comments($result);
-    $class->_prepare($result);
+    $result = $class->_prepare($result, 'last_comment_time_age');
     $app->render( text => j($result), format => 'json' );
 }
 
@@ -68,8 +68,7 @@ sub in_progress {
     foreach my $bug (@$result) {
         $bug->{state_date} = $bug->{last_comment_time};
     }
-    $class->_prepare($result);
-
+    $result = $class->_prepare($result, 'last_comment_time_age');
     $app->render( text => j($result), format => 'json' );
 }
 
@@ -92,13 +91,12 @@ sub in_dev {
     }
 
     $class->_last_comments($bugs);
-    $class->_prepare($bugs);
+    $bugs = $class->_prepare($bugs, 'last_comment_time_age');
     foreach my $bug (@$bugs) {
         next if $bug->{last_comment_time_age} < 60 * 60 * 24 * 14;
         $bug->{state_date} = $bug->{last_comment_time};
         push @$result, $bug;
     }
-
     $app->render( text => j($result), format => 'json' );
 }
 
@@ -120,8 +118,8 @@ sub stalled {
 
         push @$result, $bug;
     }
-
-    $app->render( text => j($class->_prepare($result)), format => 'json' );
+    $result = $class->_prepare($result, 'needinfo_time_age');
+    $app->render( text => j($result), format => 'json' );
 }
 
 sub infra {
@@ -157,8 +155,7 @@ sub infra {
     foreach my $bug (@$result) {
         $bug->{state_date} = $bug->{last_comment_time};
     }
-    $class->_prepare($result);
-
+    $result = $class->_prepare($result, 'creation_time_age');
     $app->render( text => j($result), format => 'json' );
 }
 
@@ -248,7 +245,7 @@ sub _last_comments {
 }
 
 sub _prepare {
-    my ($class, $bugs) = @_;
+    my ($class, $bugs, $sort_field) = @_;
 
     # fix dates
     my $now = time();
@@ -260,7 +257,12 @@ sub _prepare {
         }
     }
 
-    return $bugs;
+    # sort
+    if ($sort_field) {
+        return [ sort { $b->{creation_time_age} <=> $a->{creation_time_age} } @$bugs ];
+    } else {
+        return $bugs;
+    }
 }
 
 1;

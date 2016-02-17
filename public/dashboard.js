@@ -1,361 +1,324 @@
-YUI().use(['datasource', 'datatable', 'datatable-sort'], function(Y) {
-  function init_table(id, caption, sort_by, columns, callback) {
-    var ds = new Y.DataSource.IO({
-      source: 'http://glob.uno/bteam/rpc/' + id
-    });
-    ds.plug(Y.Plugin.DataSourceJSONSchema, {
-      schema: {
-        resultListLocator: '',
-        resultFields: columns
-      }
-    });
-    var container = document.createElement('div');
-    container.id = id;
-    document.body.appendChild(container);
-    var table = new Y.DataTable({
-      caption: '<div class="table_title">' + id.replace('_', ' ') + '</div>' +
-               '<div class="table_caption">' + Y.Escape.html(caption) +
-               '<span class="table_count" id="' + id + '_count"></span>' +
-               '</div>',
-      columns: columns,
-      sortBy: sort_by
-    });
-    table.set('strings.emptyMessage', 'Zarro Boogs Found');
-    table.plug(Y.Plugin.DataTableDataSource, {
-      datasource: ds
-    });
-    table.render('#' + id).showMessage('loadingMessage');
-    table.datasource.load();
-    ds.after('response', function(a) {
-        var el = document.getElementById(id + '_count');
-        if (a.response.results.length === 0) {
-            el.innerHTML = '';
-        } else {
-            el.innerHTML = ' : ' + a.response.results.length + ' bug' + (a.response.results.length === 1 ? '' : 's');
+$(function() {
+    'use strict';
+
+    function render() {
+        render_table(
+            'pending',
+            'Unassigned bugs (time critical components)',
+            [
+                {
+                    label: 'ID',
+                    className: 'id',
+                    render: function(item) { return render_bug(item.id) }
+                },
+                {
+                    label: 'Summary',
+                    className: 'summary',
+                    render: function(item) { return $.esc(item.summary) }
+                },
+                {
+                    label: 'Comp',
+                    className: 'component',
+                    render: function(item) { return render_component(item.component) }
+                },
+                {
+                    label: 'Created',
+                    className: 'duration',
+                    render: function(item) { return render_duration(item.creation_time_age) }
+                },
+                {
+                    label: 'Commenter',
+                    render: function(item) { return render_user(item.last_commenter) }
+                },
+                {
+                    label: 'Commented',
+                    className: 'duration',
+                    render: function(item) { return render_duration(item.last_comment_time_age) }
+                }
+            ],
+            function(data) {
+                document.title = 'bteam dashboard (' + data.length + ')';
+            }
+        );
+        render_table(
+            'in_progress',
+            'Assigned bugs being worked on (time critical components)',
+            [
+                {
+                    label: 'ID',
+                    className: 'id',
+                    render: function(item) { return render_bug(item.id) }
+                },
+                {
+                    label: 'Summary',
+                    className: 'summary',
+                    render: function(item) { return $.esc(item.summary) }
+                },
+                {
+                    label: 'Owner',
+                    render: function(item) { return render_user(item.assigned_to) }
+                },
+                {
+                    label: 'Comp',
+                    className: 'component',
+                    render: function(item) { return render_component(item.component) }
+                },
+                {
+                    label: 'Created',
+                    className: 'duration',
+                    render: function(item) { return render_duration(item.creation_time_age) }
+                },
+                {
+                    label: 'Due',
+                    className: 'duration',
+                    render: function(item) { return render_duration(item.cf_due_date_age) }
+                },
+                {
+                    label: 'Commented',
+                    className: 'duration',
+                    render: function(item) { return render_duration(item.last_comment_time_age) }
+                }
+            ]
+        );
+        render_table(
+            'stalled',
+            'Bugs waiting on more information (all components)',
+            [
+                {
+                    label: 'ID',
+                    className: 'id',
+                    render: function(item) { return render_bug(item.id) }
+                },
+                {
+                    label: 'Summary',
+                    className: 'summary',
+                    render: function(item) { return $.esc(item.summary) }
+                },
+                {
+                    label: 'Owner',
+                    render: function(item) { return render_user(item.assigned_to) }
+                },
+                {
+                    label: 'Comp',
+                    className: 'component',
+                    render: function(item) { return render_component(item.component) }
+                },
+                {
+                    label: 'Created',
+                    className: 'duration',
+                    render: function(item) { return render_duration(item.creation_time_age) }
+                },
+                {
+                    label: 'NeedInfo From',
+                    render: function(item) { return render_user(item.needinfo) }
+                },
+                {
+                    label: 'Age',
+                    className: 'duration',
+                    render: function(item) { return render_duration(item.needinfo_time_age) }
+                }
+            ]
+        );
+        render_table(
+            'in_dev',
+            'Assigned bugs with patches (all components)',
+            [
+                {
+                    label: 'ID',
+                    className: 'id',
+                    render: function(item) { return render_bug(item.id) }
+                },
+                {
+                    label: 'Summary',
+                    className: 'summary',
+                    render: function(item) { return $.esc(item.summary) }
+                },
+                {
+                    label: 'Owner',
+                    render: function(item) { return render_user(item.assigned_to) }
+                },
+                {
+                    label: 'Comp',
+                    className: 'component',
+                    render: function(item) { return render_component(item.component) }
+                },
+                {
+                    label: 'Created',
+                    className: 'duration',
+                    render: function(item) { return render_duration(item.creation_time_age) }
+                },
+                {
+                    label: 'Commented',
+                    className: 'duration',
+                    render: function(item) { return render_duration(item.last_comment_time_age) }
+                }
+            ]
+        );
+        render_table(
+            'infra',
+            'Infrastructure Bugs',
+            [
+                {
+                    label: 'ID',
+                    className: 'id',
+                    render: function(item) { return render_bug(item.id) }
+                },
+                {
+                    label: 'Summary',
+                    className: 'summary',
+                    render: function(item) { return $.esc(item.summary) }
+                },
+                {
+                    label: 'Owner',
+                    render: function(item) { return render_user(item.assigned_to) }
+                },
+                {
+                    label: 'Created',
+                    className: 'duration',
+                    render: function(item) { return render_duration(item.creation_time_age) }
+                },
+                {
+                    label: 'NeedInfo',
+                    render: function(item) { return render_user(item.needinfo) }
+                },
+                {
+                    label: 'Commented',
+                    className: 'duration',
+                    render: function(item) { return render_duration(item.last_comment_time_age) }
+                }
+            ]
+        );
+        $('#updated').text(new Date().toLocaleString());
+    }
+
+    function render_table(id, subtitle, fields, callback) {
+        let $container = $('#' + id);
+        if ($container.length == 0) {
+            console.error('failed to find #' + id);
+            return;
         }
-    });
-    if (callback) {
-        ds.after('response', callback);
+        $container
+            .empty()
+            .append(
+                $('<tr/>').append(
+                    $('<td/>').addClass('loading').text('Loading...')
+                )
+            );
+        $.getJSON('rpc/' + id, function(data) {
+            if (data.error) {
+                console.error(data.error);
+                return;
+            }
+
+            let $table = $('#' + id);
+            $table.empty();
+
+            $table.append(
+                $('<thead/>').append(
+                    $('<tr/>').append(
+                        $('<td/>')
+                            .attr('colspan', fields.length)
+                            .addClass('header')
+                            .append($('<span/>').addClass('title').text(id.toUpperCase()))
+                            .append($('<span/>').addClass('count').text('(' + data.length + ')'))
+                            .append($('<span/>').addClass('subtitle').text(subtitle))
+                    )
+                )
+            );
+
+            let $tbody = $('<tbody/>');
+            $table.append($tbody);
+
+            let $tr = $('<tr/>').addClass('header');
+            $.each(fields, function() {
+                let field = this;
+                $tr.append($('<th/>').addClass(field.className).text(field.label));
+            });
+            $tbody.append($tr);
+
+            $.each(data, function() {
+                let item = this;
+                let $tr = $('<tr/>');
+                $.each(fields, function() {
+                    let field = this;
+                    $tr.append($('<td/>').addClass(field.className).append(field.render(item)));
+                });
+                $tbody.append($tr);
+            });
+
+            if (data.length == 0) {
+                $tbody
+                    .append(
+                        $('<tr/>').append(
+                            $('<td/>')
+                                .attr('colspan', fields.length)
+                                .addClass('zarro')
+                                .text('zarro boogs')
+                        )
+                    );
+            }
+
+            if (callback) {
+                callback(data);
+            }
+        });
     }
-    return table;
-  }
 
-  var format_bug = '<a href="https://bugzilla.mozilla.org/show_bug.cgi?id={value}">{value}</a>';
-
-  function format_component(o) {
-    switch (o.value) {
-      case 'Custom Bug Entry Forms': return 'Bug Forms';
-      case 'Extensions: Other': return o.value;
-      default: return o.value.replace('Extensions: ', '');
+    function render_bug(id) {
+        return $('<a/>')
+            .attr('href', 'https://bugzilla.mozilla.org/show_bug.cgi?id=' + id)
+            .text(id);
     }
-  }
 
-  function format_user(o) {
-    if (!o.value || o.value == 'nobody@mozilla.org')
-      return '-';
-    return o.value
-      .replace(/@mozilla\.(org|com)(\.uk)?$/, '')
-      .replace(/@gmail\.com$/, '');
-  }
-
-  function format_duration(o) {
-    return o.value ? timeAgo(o.value) : '-';
-  }
-
-  init_table(
-    'pending',
-    'Unassigned bugs (time critical components)',
-    { last_comment_time_age: 'desc'},
-    [
-      {
-        key: 'id',
-        parse: 'number',
-        label: 'ID',
-        sortable: true,
-        allowHTML: true,
-        className: 'id',
-        formatter: format_bug
-      },
-      {
-        key: 'summary',
-        label: 'Summary',
-        className: 'summary'
-      },
-      {
-        key: 'component',
-        sortable: true,
-        label: 'Comp',
-        className: 'component',
-        formatter: format_component
-      },
-      {
-        key: 'creation_time_age',
-        parse: 'number',
-        label: 'Created',
-        sortable: true,
-        className: 'duration',
-        formatter: format_duration
-      },
-      {
-        key: 'last_commenter',
-        label: 'Commenter',
-        sortable: true,
-        formatter: format_user
-      },
-      {
-        key: 'last_comment_time_age',
-        parse: 'number',
-        label: 'Commented',
-        sortable: true,
-        className: 'duration',
-        formatter: format_duration
-      }
-    ],
-    function(a) {
-        if (a.response.results.length > 0) {
-            document.title += ' (' + a.response.results.length + ')';
+    function render_component(component) {
+        switch (component) {
+            case 'Custom Bug Entry Forms': return 'Bug Forms';
+            case 'Extensions: Other': return component;
+            default: return $.esc(component.replace('Extensions: ', ''));
         }
     }
-  );
 
-  init_table(
-    'in_progress',
-    'Assigned bugs being worked on (time critical components)',
-    { last_comment_time_age: 'desc' },
-    [
-      {
-        key: 'id',
-        parse: 'number',
-        label: 'ID',
-        sortable: true,
-        allowHTML: true,
-        className: 'id',
-        formatter: format_bug
-      },
-      {
-        key: 'summary',
-        label: 'Summary',
-        className: 'summary'
-      },
-      {
-        key: 'assigned_to',
-        label: 'Owner',
-        sortable: true,
-        formatter: format_user
-      },
-      {
-        key: 'component',
-        sortable: true,
-        label: 'Comp',
-        className: 'component',
-        formatter: format_component
-      },
-      {
-        key: 'creation_time_age',
-        parse: 'number',
-        label: 'Created',
-        sortable: true,
-        className: 'duration',
-        formatter: format_duration
-      },
-      {
-        key: 'cf_due_date_age',
-        parse: 'number',
-        label: 'Due',
-        sortable: true,
-        className: 'duration',
-        formatter: format_duration
-      },
-      {
-        key: 'last_comment_time_age',
-        parse: 'number',
-        label: 'Commented',
-        sortable: true,
-        className: 'duration',
-        formatter: format_duration
-      }
-    ]
-  );
+    function render_user(user) {
+        if (!user || user == 'nobody@mozilla.org') {
+            return '-';
+        }
+        return $.esc(
+            user.replace(/@mozilla\.(org|com)(\.uk)?$/, '')
+                .replace(/@gmail\.com$/, '')
+        );
+    }
 
-  init_table(
-    'stalled',
-    'Bugs waiting on more information (all components)',
-    { needinfo_time_age: 'desc' },
-    [
-      {
-        key: 'id',
-        parse: 'number',
-        label: 'ID',
-        sortable: true,
-        allowHTML: true,
-        className: 'id',
-        formatter: format_bug
-      },
-      {
-        key: 'summary',
-        label: 'Summary',
-        className: 'summary'
-      },
-      {
-        key: 'assigned_to',
-        label: 'Owner',
-        sortable: true,
-        formatter: format_user
-      },
-      {
-        key: 'component',
-        sortable: true,
-        label: 'Comp',
-        className: 'component',
-        formatter: format_component
-      },
-      {
-        key: 'creation_time_age',
-        parse: 'number',
-        label: 'Created',
-        sortable: true,
-        className: 'duration',
-        formatter: format_duration
-      },
-      {
-        key: 'needinfo',
-        label: 'NeedInfo From',
-        sortable: true,
-        formatter: format_user
-      },
-      {
-        key: 'needinfo_time_age',
-        parse: 'number',
-        label: 'Age',
-        sortable: true,
-        className: 'duration',
-        formatter: format_duration
-      }
-    ]
-  );
+    function render_duration(ss) {
+        if (!ss) {
+            return '-';
+        }
+        let mm = Math.round(ss / 60),
+            hh = Math.round(mm / 60),
+            dd = Math.round(hh / 24),
+            mo = Math.round(dd / 30),
+            yy = Math.round(mo / 12);
+        if (ss < 10) return 'just now';
+        if (ss < 45) return ss + ' seconds ago';
+        if (ss < 90) return 'a minute ago';
+        if (mm < 45) return mm + ' minutes ago';
+        if (mm < 90) return 'an hour ago';
+        if (hh < 24) return hh + ' hours ago';
+        if (hh < 36) return 'a day ago';
+        if (dd < 30) return dd + ' days ago';
+        if (dd < 45) return 'a month ago';
+        if (mo < 12) return mo + ' months ago';
+        if (mo < 18) return 'a year ago';
+        return yy + ' years ago';
+    }
 
-  init_table(
-    'in_dev',
-    'Assigned bugs with patches (all components)',
-    { last_comment_time_age: 'desc' },
-    [
-      {
-        key: 'id',
-        parse: 'number',
-        label: 'ID',
-        sortable: true,
-        allowHTML: true,
-        className: 'id',
-        formatter: format_bug
-      },
-      {
-        key: 'summary',
-        label: 'Summary',
-        className: 'summary'
-      },
-      {
-        key: 'assigned_to',
-        label: 'Owner',
-        sortable: true,
-        formatter: format_user
-      },
-      {
-        key: 'component',
-        sortable: true,
-        label: 'Comp',
-        className: 'component',
-        formatter: format_component
-      },
-      {
-        key: 'creation_time_age',
-        parse: 'number',
-        label: 'Created',
-        sortable: true,
-        className: 'duration',
-        formatter: format_duration
-      },
-      {
-        key: 'last_comment_time_age',
-        parse: 'number',
-        label: 'Commented',
-        sortable: true,
-        className: 'duration',
-        formatter: format_duration
-      }
-    ]
-  );
+    $.extend({
+        esc: function(s) {
+            return s === undefined
+                ? ''
+                : s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        },
+    });
 
-  init_table(
-    'infra',
-    'Infrastructure Bugs',
-    { creation_time_age: 'desc' },
-    [
-      {
-        key: 'id',
-        parse: 'number',
-        label: 'ID',
-        sortable: true,
-        allowHTML: true,
-        className: 'id',
-        formatter: format_bug
-      },
-      {
-        key: 'summary',
-        label: 'Summary',
-        className: 'summary'
-      },
-      {
-        key: 'assigned_to',
-        label: 'Owner',
-        sortable: true,
-        formatter: format_user
-      },
-      {
-        key: 'creation_time_age',
-        parse: 'number',
-        label: 'Created',
-        sortable: true,
-        className: 'duration',
-        formatter: format_duration
-      },
-      {
-        key: 'needinfo',
-        label: 'NeedInfo',
-        sortable: false,
-        formatter: format_user
-      },
-      {
-        key: 'last_comment_time_age',
-        parse: 'number',
-        label: 'Commented',
-        sortable: true,
-        className: 'duration',
-        formatter: format_duration
-      }
-    ]
-  );
-
-  window.setInterval(function() { location.reload(); }, 1000 * 60 * 60);
-  document.getElementById('updated').innerHTML = new Date().toLocaleString();
+    render();
+    window.setInterval(render, 60 * 60 * 1000);
 });
-
-function timeAgo(param) {
-  var ss = param.constructor === Date ? Math.round((new Date() - param) / 1000) : param;
-  var mm = Math.round(ss / 60),
-      hh = Math.round(mm / 60),
-      dd = Math.round(hh / 24),
-      mo = Math.round(dd / 30),
-      yy = Math.round(mo / 12);
-  if (ss < 10) return 'just now';
-  if (ss < 45) return ss + ' seconds';
-  if (ss < 90) return 'a minute';
-  if (mm < 45) return mm + ' minutes';
-  if (mm < 90) return 'an hour';
-  if (hh < 24) return hh + ' hours';
-  if (hh < 36) return 'a day';
-  if (dd < 30) return dd + ' days';
-  if (dd < 45) return 'a month';
-  if (mo < 12) return mo + ' months';
-  if (mo < 18) return 'a year';
-  return yy + ' years';
-}

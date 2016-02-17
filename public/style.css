@@ -1,0 +1,82 @@
+body {
+    font-family: sans-serif;
+    font-size: small;
+    background: url(noise.png) #444;
+}
+
+table {
+    width: 100%;
+    max-width: 1200px;
+    border-spacing: 0;
+    box-shadow: 0px 0px 1px #444;
+    margin-bottom: 10px;
+}
+
+.loading {
+    background: #6A7B86;
+    padding: 7px;
+    color: #fff;
+}
+
+thead {
+    background-color: #6A7B86;
+    background-image: linear-gradient(#6A7B86, #424F5A);
+}
+
+thead .header {
+    padding: 7px;
+}
+
+thead .title {
+    color: #fff;
+    font-weight: bold;
+    font-size: large;
+}
+
+thead .count {
+    color: #fff;
+    padding-left: 5px;
+}
+
+thead .subtitle {
+    color: #ddd;
+    padding-left: 20px;
+}
+
+tbody {
+    background: #fff;
+}
+
+tbody th, tbody td {
+    padding: 5px 10px;
+}
+
+tbody th {
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+}
+
+tbody tr:nth-child(even) {
+    background: #eee;
+}
+
+.id {
+    text-align: right;
+}
+
+.summary {
+    width: 100%;
+}
+
+.duration {
+    white-space: nowrap;
+    text-align: right;
+}
+
+.component {
+    white-space: nowrap;
+}
+
+#annotation, #annotation a {
+    color: #aaa;
+}

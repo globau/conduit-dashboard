@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>bteam dashboard</title>
+  %= stylesheet_file 'style.css'
+  %= javascript 'https://code.jquery.com/jquery-2.2.0.min.js'
+  %= javascript_file 'dashboard.js'
+</head>
+
+<body>
+  <table id="pending"></table>
+  <table id="in_progress"></table>
+  <table id="stalled"></table>
+  <table id="in_dev"></table>
+  <table id="infra"></table>
+  <div id="annotation">
+    <span id="updated"></span><br>
+    <a href="https://github.com/globau/bteam-dashboard">source</a>
+  </div>
+</body>
+
+</html>

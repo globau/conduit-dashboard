@@ -2,9 +2,6 @@
 BEGIN { $ENV{MOJO_MODE} = 'production'; }
 use Mojolicious::Lite;
 
-use FindBin '$RealBin';
-use lib $RealBin;
-
 app->secrets('!bteam!');
 
 get '/' => 'index';
@@ -21,81 +18,20 @@ group {
     get '/rpc/all'          => sub { BTeam::RPC->all(@_)         };
 };
 
+helper javascript_file => sub {
+    my ($c, $file) = @_;
+    my $mtime = app->static->file($file)->mtime;
+    return Mojo::ByteStream->new(
+        '<script src="' . $file . '?' . $mtime . '"></script>'
+    );
+};
+
+helper stylesheet_file => sub {
+    my ($c, $file) = @_;
+    my $mtime = app->static->file($file)->mtime;
+    return Mojo::ByteStream->new(
+        '<link href="' . $file . '?' . $mtime . '" rel="stylesheet">'
+    );
+};
+
 app->start;
-__DATA__
-@@ index.html.ep
-<!DOCTYPE html>
-<html>
-
-<head>
-  <title>bteam dashboard</title>
-  <script src="http://yui.yahooapis.com/3.17.2/build/yui/yui-min.js"></script>
-  <script src="dashboard.js?6"></script>
-  <style>
-    body {
-      font-family: sans-serif;
-      font-size: small;
-      background: url(noise.png) #666;
-    }
-    .yui3-datatable-table {
-      width: 100%;
-      max-width: 1200px;
-    }
-    .yui3-datatable-message-content {
-      background: #fff;
-    }
-    .table_title {
-      color: #fff;
-      font-style: normal;
-      font-weight: bold;
-      font-size: large;
-      text-transform: uppercase;
-    }
-    .table_caption {
-      color: #ddd;
-      font-style: normal;
-      font-weight: bold;
-      font-size: small;
-    }
-    .table_count {
-      color: #ddd;
-      font-style: normal;
-      font-weight: normal;
-      font-size: x-small;
-    }
-    .id {
-      text-align: right;
-    }
-    .summary {
-      width: 100%;
-    }
-    .duration {
-      white-space: nowrap;
-      text-align: right;
-    }
-    .component {
-      white-space: nowrap;
-    }
-    #annotation {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      text-align: right;
-    }
-    #annotation, #annotation a {
-      color: #bbb;
-    }
-    #annotation a:hover {
-      color: #fff;
-    }
-  </style>
-</head>
-
-<body class="yui3-skin-sam">
-  <div id="annotation">
-    <span id="updated"></span><br>
-    <a href="https://github.com/globau/bteam-dashboard">source</a>
-  </div>
-</body>
-
-</html>
