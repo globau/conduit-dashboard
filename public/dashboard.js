@@ -9,30 +9,40 @@ $(function() {
                 {
                     label: 'ID',
                     className: 'id',
+                    sort: 'int',
                     render: function(item) { return render_bug(item.id) }
                 },
                 {
                     label: 'Summary',
                     className: 'summary',
-                    render: function(item) { return $.esc(item.summary) }
+                    sort: 'string-ins',
+                    render: function(item) { return render_summary(item.summary) }
                 },
                 {
                     label: 'Comp',
                     className: 'component',
+                    sort: 'string-ins',
                     render: function(item) { return render_component(item.component) }
                 },
                 {
                     label: 'Created',
                     className: 'duration',
+                    sort: 'int',
+                    sortValue: function(item) { return item.creation_time_age },
                     render: function(item) { return render_duration(item.creation_time_age) }
                 },
                 {
                     label: 'Commenter',
+                    className: 'person',
+                    sort: 'string-ins',
                     render: function(item) { return render_user(item.last_commenter) }
                 },
                 {
                     label: 'Commented',
                     className: 'duration',
+                    sort: 'int',
+                    sortDesc: true,
+                    sortValue: function(item) { return item.last_comment_time_age },
                     render: function(item) { return render_duration(item.last_comment_time_age) }
                 }
             ],
@@ -47,35 +57,47 @@ $(function() {
                 {
                     label: 'ID',
                     className: 'id',
+                    sort: 'int',
                     render: function(item) { return render_bug(item.id) }
                 },
                 {
                     label: 'Summary',
                     className: 'summary',
-                    render: function(item) { return $.esc(item.summary) }
+                    sort: 'string-ins',
+                    render: function(item) { return render_summary(item.summary) }
                 },
                 {
                     label: 'Owner',
+                    className: 'person',
+                    sort: 'string-ins',
                     render: function(item) { return render_user(item.assigned_to) }
                 },
                 {
                     label: 'Comp',
                     className: 'component',
+                    sort: 'string-ins',
                     render: function(item) { return render_component(item.component) }
                 },
                 {
                     label: 'Created',
                     className: 'duration',
+                    sort: 'int',
+                    sortValue: function(item) { return item.creation_time_age },
                     render: function(item) { return render_duration(item.creation_time_age) }
                 },
                 {
                     label: 'Due',
                     className: 'duration',
+                    sort: 'int',
+                    sortValue: function(item) { return item.cf_due_date_age },
                     render: function(item) { return render_duration(item.cf_due_date_age) }
                 },
                 {
                     label: 'Commented',
                     className: 'duration',
+                    sort: 'int',
+                    sortDesc: true,
+                    sortValue: function(item) { return item.last_comment_time_age },
                     render: function(item) { return render_duration(item.last_comment_time_age) }
                 }
             ]
@@ -87,34 +109,45 @@ $(function() {
                 {
                     label: 'ID',
                     className: 'id',
+                    sort: 'int',
                     render: function(item) { return render_bug(item.id) }
                 },
                 {
                     label: 'Summary',
                     className: 'summary',
-                    render: function(item) { return $.esc(item.summary) }
+                    sort: 'string-ins',
+                    render: function(item) { return render_summary(item.summary) }
                 },
                 {
                     label: 'Owner',
+                    className: 'person',
+                    sort: 'int',
                     render: function(item) { return render_user(item.assigned_to) }
                 },
                 {
                     label: 'Comp',
                     className: 'component',
+                    sort: 'string-ins',
                     render: function(item) { return render_component(item.component) }
                 },
                 {
                     label: 'Created',
                     className: 'duration',
+                    sort: 'int',
+                    sortValue: function(item) { return item.creation_time_age },
                     render: function(item) { return render_duration(item.creation_time_age) }
                 },
                 {
                     label: 'NeedInfo From',
+                    className: 'duration',
+                    sort: 'int',
                     render: function(item) { return render_user(item.needinfo) }
                 },
                 {
                     label: 'Age',
                     className: 'duration',
+                    sort: 'int',
+                    sortDesc: true,
                     render: function(item) { return render_duration(item.needinfo_time_age) }
                 }
             ]
@@ -126,30 +159,40 @@ $(function() {
                 {
                     label: 'ID',
                     className: 'id',
+                    sort: 'int',
                     render: function(item) { return render_bug(item.id) }
                 },
                 {
                     label: 'Summary',
                     className: 'summary',
-                    render: function(item) { return $.esc(item.summary) }
+                    sort: 'string-ins',
+                    render: function(item) { return render_summary(item.summary) }
                 },
                 {
                     label: 'Owner',
+                    className: 'person',
+                    sort: 'string-ins',
                     render: function(item) { return render_user(item.assigned_to) }
                 },
                 {
                     label: 'Comp',
                     className: 'component',
+                    sort: 'string-ins',
                     render: function(item) { return render_component(item.component) }
                 },
                 {
                     label: 'Created',
                     className: 'duration',
+                    sort: 'int',
+                    sortValue: function(item) { return item.creation_time_age },
                     render: function(item) { return render_duration(item.creation_time_age) }
                 },
                 {
                     label: 'Commented',
                     className: 'duration',
+                    sort: 'int',
+                    sortDesc: true,
+                    sortValue: function(item) { return item.last_comment_time_age },
                     render: function(item) { return render_duration(item.last_comment_time_age) }
                 }
             ]
@@ -161,29 +204,40 @@ $(function() {
                 {
                     label: 'ID',
                     className: 'id',
+                    sort: 'int',
                     render: function(item) { return render_bug(item.id) }
                 },
                 {
                     label: 'Summary',
                     className: 'summary',
-                    render: function(item) { return $.esc(item.summary) }
+                    sort: 'string-ins',
+                    render: function(item) { return render_summary(item.summary) }
                 },
                 {
                     label: 'Owner',
+                    className: 'person',
+                    sort: 'string-ins',
                     render: function(item) { return render_user(item.assigned_to) }
                 },
                 {
                     label: 'Created',
                     className: 'duration',
+                    sort: 'int',
+                    sortValue: function(item) { return item.creation_time_age },
                     render: function(item) { return render_duration(item.creation_time_age) }
                 },
                 {
                     label: 'NeedInfo',
+                    className: 'person',
+                    sort: 'string-ins',
                     render: function(item) { return render_user(item.needinfo) }
                 },
                 {
                     label: 'Commented',
                     className: 'duration',
+                    sort: 'int',
+                    sortDesc: true,
+                    sortValue: function(item) { return item.last_comment_time_age },
                     render: function(item) { return render_duration(item.last_comment_time_age) }
                 }
             ]
@@ -199,49 +253,51 @@ $(function() {
         }
         $container
             .empty()
-            .append(
-                $('<tr/>').append(
-                    $('<td/>').addClass('loading').text('Loading...')
-                )
-            );
+            .append($('<div/>').addClass('loading').text('Loading...'));
         $.getJSON('rpc/' + id, function(data) {
             if (data.error) {
                 console.error(data.error);
                 return;
             }
 
-            let $table = $('#' + id);
-            $table.empty();
+            $container.empty();
 
-            $table.append(
-                $('<thead/>').append(
-                    $('<tr/>').append(
-                        $('<td/>')
-                            .attr('colspan', fields.length)
-                            .addClass('header')
-                            .append($('<span/>').addClass('title').text(id.toUpperCase()))
-                            .append($('<span/>').addClass('count').text('(' + data.length + ')'))
-                            .append($('<span/>').addClass('subtitle').text(subtitle))
-                    )
-                )
+            $container.append(
+                $('<div/>')
+                    .addClass('header')
+                    .append($('<span/>').addClass('title').text(id.toUpperCase()))
+                    .append($('<span/>').addClass('count').text('(' + data.length + ')'))
+                    .append($('<span/>').addClass('subtitle').text(subtitle))
             );
+
+            let $table = $('<table/>');
+            $container.append($table);
+
+            let $tr = $('<tr/>').addClass('table-header');
+            $.each(fields, function() {
+                let field = this;
+                let $th = $('<th/>').addClass(field.className).text(field.label);
+                if (field.sort) {
+                    $th.data('sort', field.sort);
+                    $th.data('sort-default', field.sortDesc ? 'desc' : 'asc');
+                }
+                $tr.append($th);
+            });
+            $table.append($('<thead/>').append($tr));
 
             let $tbody = $('<tbody/>');
             $table.append($tbody);
-
-            let $tr = $('<tr/>').addClass('header');
-            $.each(fields, function() {
-                let field = this;
-                $tr.append($('<th/>').addClass(field.className).text(field.label));
-            });
-            $tbody.append($tr);
 
             $.each(data, function() {
                 let item = this;
                 let $tr = $('<tr/>');
                 $.each(fields, function() {
                     let field = this;
-                    $tr.append($('<td/>').addClass(field.className).append(field.render(item)));
+                    let $td = $('<td/>').addClass(field.className).append(field.render(item));
+                    if (field.sortValue) {
+                        $td.data('sort-value', field.sortValue(item));
+                    }
+                    $tr.append($td);
                 });
                 $tbody.append($tr);
             });
@@ -261,7 +317,15 @@ $(function() {
             if (callback) {
                 callback(data);
             }
+
+            $table.stupidtable();
         });
+    }
+
+    function render_summary(summary) {
+        return summary === ''
+            ? $('<i/>').text('confidential')
+            : $.esc(summary);
     }
 
     function render_bug(id) {
