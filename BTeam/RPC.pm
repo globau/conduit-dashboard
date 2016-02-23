@@ -173,7 +173,7 @@ sub all {
 
 sub _bugs {
     my ($class, $components) = @_;
-    return BTeam::Bugzilla->search({
+    my $bugs = BTeam::Bugzilla->search({
         include_fields  => join(',', qw(
             id
             summary
@@ -184,11 +184,16 @@ sub _bugs {
             status
             assigned_to
             depends_on
+            groups
         )),
         product         => 'bugzilla.mozilla.org',
         component       => $components,
         bug_status      => '__open__',
     });
+    foreach my $bug (@$bugs) {
+        $bug->{summary} = '' if @{ $bug->{groups} // [] };
+    }
+    return $bugs;
 }
 
 sub _bugs_with_attachments {
@@ -240,7 +245,7 @@ sub _last_comments {
         next unless exists $comments->{$bug->{id}};
         my $comment = pop @{ $comments->{$bug->{id}}->{comments} };
         $bug->{last_comment_time} = $comment->{time};
-        $bug->{last_commenter} = $comment->{author};
+        $bug->{last_commenter} = $comment->{author} unless @{ $bug->{groups} // [] };
     }
 }
 

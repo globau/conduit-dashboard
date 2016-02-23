@@ -1,10 +1,13 @@
 package BTeam::Bugzilla;
 use strict;
+use feature 'state';
 
 use BTeam::Cache;
+use FindBin qw($RealBin);
 use Mojo::JSON qw(j);
 use Mojo::URL;
 use Mojo::UserAgent;
+use Mojo::Util qw(slurp);
 
 my $_instance;
 sub instance {
@@ -19,9 +22,22 @@ sub _ua {
 
 sub rest {
     my ($self, $method, $params) = @_;
+
+    state $api_key;
+    if (!defined $api_key) {
+        if (-e $RealBin . '/api-key') {
+            chomp($api_key = slurp($RealBin . '/api-key'));
+        } else {
+            $api_key = 0;
+        }
+    }
+
     my $url = Mojo::URL->new('https://bugzilla.mozilla.org/rest/' . $method);
     foreach my $name (sort keys %$params) {
         $url->query->param($name => $params->{$name});
+    }
+    if ($api_key) {
+        $url->query->param(api_key => $api_key);
     }
 
     if (my $cached = BTeam::Cache->get($url)) {
