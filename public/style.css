@@ -59,6 +59,10 @@ thead th {
     cursor: pointer;
 }
 
+thead th.sorting-asc, thead th.sorting-desc {
+    text-decoration: underline;
+}
+
 tbody tr:nth-child(even) {
     background: #eee;
 }

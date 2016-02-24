@@ -41,7 +41,7 @@ $(function() {
                     label: 'Commented',
                     className: 'duration',
                     sort: 'int',
-                    sortDesc: true,
+                    sorted: 'desc',
                     sortValue: function(item) { return item.last_comment_time_age },
                     render: function(item) { return render_duration(item.last_comment_time_age) }
                 }
@@ -96,7 +96,7 @@ $(function() {
                     label: 'Commented',
                     className: 'duration',
                     sort: 'int',
-                    sortDesc: true,
+                    sorted: 'desc',
                     sortValue: function(item) { return item.last_comment_time_age },
                     render: function(item) { return render_duration(item.last_comment_time_age) }
                 }
@@ -121,7 +121,7 @@ $(function() {
                 {
                     label: 'Owner',
                     className: 'person',
-                    sort: 'int',
+                    sort: 'string-ins',
                     render: function(item) { return render_user(item.assigned_to) }
                 },
                 {
@@ -139,15 +139,15 @@ $(function() {
                 },
                 {
                     label: 'NeedInfo From',
-                    className: 'duration',
-                    sort: 'int',
+                    className: 'person',
+                    sort: 'string-ins',
                     render: function(item) { return render_user(item.needinfo) }
                 },
                 {
                     label: 'Age',
                     className: 'duration',
                     sort: 'int',
-                    sortDesc: true,
+                    sorted: 'desc',
                     render: function(item) { return render_duration(item.needinfo_time_age) }
                 }
             ]
@@ -191,7 +191,7 @@ $(function() {
                     label: 'Commented',
                     className: 'duration',
                     sort: 'int',
-                    sortDesc: true,
+                    sorted: 'desc',
                     sortValue: function(item) { return item.last_comment_time_age },
                     render: function(item) { return render_duration(item.last_comment_time_age) }
                 }
@@ -236,7 +236,7 @@ $(function() {
                     label: 'Commented',
                     className: 'duration',
                     sort: 'int',
-                    sortDesc: true,
+                    sorted: 'desc',
                     sortValue: function(item) { return item.last_comment_time_age },
                     render: function(item) { return render_duration(item.last_comment_time_age) }
                 }
@@ -279,7 +279,10 @@ $(function() {
                 let $th = $('<th/>').addClass(field.className).text(field.label);
                 if (field.sort) {
                     $th.data('sort', field.sort);
-                    $th.data('sort-default', field.sortDesc ? 'desc' : 'asc');
+                    if (field.sorted) {
+                        $th.data('sort-default', field.sorted);
+                        $th.addClass('sorting-' + field.sorted);
+                    }
                 }
                 $tr.append($th);
             });
