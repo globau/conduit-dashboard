@@ -11,6 +11,7 @@
 
 <body>
   <div id="pending"></div>
+  <div id="pending_pri"></div>
   <div id="in_progress"></div>
   <div id="stalled"></div>
   <div id="in_dev"></div>

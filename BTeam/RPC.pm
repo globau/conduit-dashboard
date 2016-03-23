@@ -10,14 +10,54 @@ sub pending {
     my ($class, $app) = @_;
     my $result;
 
-    my $bugs = $class->_bugs([
-        'Administration',
-        'Custom Bug Entry Forms',
-        'Extensions: MozProjectReview',
-    ]);
+    my $bugs = $class->_bugs(
+        component => [
+            'Administration',
+            'Custom Bug Entry Forms',
+            'Extensions: MozProjectReview',
+        ]
+    );
     BUG: foreach my $bug (@$bugs) {
         # skip assigned bugs
         next if $bug->{assigned_to} ne 'nobody@mozilla.org';
+
+        # a due_date means it has been answererd
+        next if $bug->{cf_due_date};
+        delete $bug->{cf_due_date};
+
+        # skip needinfo
+        foreach my $flag (@{ $bug->{flags} }) {
+            next unless $flag->{name} eq 'needinfo';
+            my $requestee = $flag->{requestee};
+            next BUG unless grep { $requestee eq $_ } BTEAM;
+        }
+        delete $bug->{flags};
+
+        push @$result, $bug;
+    }
+
+    $class->_last_comments($result);
+    $result = $class->_prepare($result, 'last_comment_time_age');
+    $app->render( text => j($result), format => 'json' );
+}
+
+sub pending_pri {
+    my ($class, $app) = @_;
+    my $result;
+
+    my @ignore = (
+        'Administration',
+        'Custom Bug Entry Forms',
+        'Extensions: MozProjectReview',
+    );
+
+    my $bugs = $class->_bugs(priority => [qw( P1 P2 P3 P4 P5 )]);
+    BUG: foreach my $bug (@$bugs) {
+        # skip assigned bugs
+        next if $bug->{assigned_to} ne 'nobody@mozilla.org';
+
+        # skip ignored components
+        next if grep { $bug->{component} eq $_ } @ignore;
 
         # a due_date means it has been answererd
         next if $bug->{cf_due_date};
@@ -43,12 +83,14 @@ sub in_progress {
     my ($class, $app) = @_;
     my $result;
 
-    my $bugs = $class->_bugs([
-        'Administration',
-        'Custom Bug Entry Forms',
-        'Extensions: MozProjectReview',
-        'Infrastructure',
-    ]);
+    my $bugs = $class->_bugs(
+        component => [
+            'Administration',
+            'Custom Bug Entry Forms',
+            'Extensions: MozProjectReview',
+            'Infrastructure',
+        ]
+    );
     BUG: foreach my $bug (@$bugs) {
         # skip unassigned bugs
         next if
@@ -104,7 +146,7 @@ sub stalled {
     my ($class, $app) = @_;
     my $result;
 
-    my $bugs = $class->_bugs([]);
+    my $bugs = $class->_bugs();
     BUG: foreach my $bug (@$bugs) {
         foreach my $flag (@{ $bug->{flags} }) {
             next unless $flag->{name} eq 'needinfo';
@@ -126,7 +168,7 @@ sub infra {
     my ($class, $app) = @_;
     my $result;
 
-    my $bugs = $class->_bugs(['Infrastructure']);
+    my $bugs = $class->_bugs(component => ['Infrastructure']);
     BUG: foreach my $bug (@$bugs) {
         # skip bugs with open blockers
         # because we don't authentiate, we can't tell if non-public bugs are
@@ -162,17 +204,19 @@ sub infra {
 sub all {
     my ($class, $app) = @_;
 
-    my $bugs = $class->_bugs([
-        'Administration',
-        'Custom Bug Entry Forms',
-        'Extensions: MozProjectReview',
-        'Infrastructure',
-    ]);
+    my $bugs = $class->_bugs(
+        component => [
+            'Administration',
+            'Custom Bug Entry Forms',
+            'Extensions: MozProjectReview',
+            'Infrastructure',
+        ]
+    );
     $app->render( text => j($class->_prepare($bugs)), format => 'json' );
 }
 
 sub _bugs {
-    my ($class, $components) = @_;
+    my ($class, @args) = @_;
     my $bugs = BTeam::Bugzilla->search({
         include_fields  => join(',', qw(
             id
@@ -185,10 +229,11 @@ sub _bugs {
             assigned_to
             depends_on
             groups
+            priority
         )),
         product         => 'bugzilla.mozilla.org',
-        component       => $components,
         bug_status      => '__open__',
+        @args,
     });
     foreach my $bug (@$bugs) {
         $bug->{summary} = '' if @{ $bug->{groups} // [] };

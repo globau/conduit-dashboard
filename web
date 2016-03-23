@@ -11,6 +11,7 @@ group {
         require BTeam::RPC;
     };
     get '/rpc/pending'      => sub { BTeam::RPC->pending(@_)     };
+    get '/rpc/pending_pri'  => sub { BTeam::RPC->pending_pri(@_) };
     get '/rpc/in_progress'  => sub { BTeam::RPC->in_progress(@_) };
     get '/rpc/in_dev'       => sub { BTeam::RPC->in_dev(@_)      };
     get '/rpc/stalled'      => sub { BTeam::RPC->stalled(@_)     };

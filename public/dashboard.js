@@ -1,9 +1,17 @@
+var g_pending_count = 0;
+var g_pending_pri_count = 0;
+
+function update_title() {
+    document.title = 'bteam dashboard (' + (g_pending_count + g_pending_pri_count) + ')';
+}
+
 $(function() {
     'use strict';
 
     function render() {
         render_table(
             'pending',
+            'Pending - High Priority',
             'Unassigned bugs (time critical components)',
             [
                 {
@@ -47,11 +55,69 @@ $(function() {
                 }
             ],
             function(data) {
-                document.title = 'bteam dashboard (' + data.length + ')';
+                g_pending_count = data.length;
+                update_title();
+            }
+        );
+        render_table(
+            'pending_pri',
+            'Pending',
+            'Unassigned bugs (bugs with a priority set)',
+            [
+                {
+                    label: 'ID',
+                    className: 'id',
+                    sort: 'int',
+                    render: function(item) { return render_bug(item.id) }
+                },
+                {
+                    label: 'Summary',
+                    className: 'summary',
+                    sort: 'string-ins',
+                    render: function(item) { return render_summary(item.summary) }
+                },
+                {
+                    label: 'Comp',
+                    className: 'component',
+                    sort: 'string-ins',
+                    render: function(item) { return render_component(item.component) }
+                },
+                {
+                    label: 'Pri',
+                    className: 'priority',
+                    sort: 'string-ins',
+                    render: function(item) { return item.priority }
+                },
+                {
+                    label: 'Created',
+                    className: 'duration',
+                    sort: 'int',
+                    sortValue: function(item) { return item.creation_time_age },
+                    render: function(item) { return render_duration(item.creation_time_age) }
+                },
+                {
+                    label: 'Commenter',
+                    className: 'person',
+                    sort: 'string-ins',
+                    render: function(item) { return render_user(item.last_commenter) }
+                },
+                {
+                    label: 'Commented',
+                    className: 'duration',
+                    sort: 'int',
+                    sorted: 'desc',
+                    sortValue: function(item) { return item.last_comment_time_age },
+                    render: function(item) { return render_duration(item.last_comment_time_age) }
+                }
+            ],
+            function(data) {
+                g_pending_pri_count = data.length;
+                update_title();
             }
         );
         render_table(
             'in_progress',
+            'In Progress',
             'Assigned bugs being worked on (time critical components)',
             [
                 {
@@ -104,6 +170,7 @@ $(function() {
         );
         render_table(
             'stalled',
+            'Stalled',
             'Bugs waiting on more information (all components)',
             [
                 {
@@ -154,6 +221,7 @@ $(function() {
         );
         render_table(
             'in_dev',
+            'In Development',
             'Assigned bugs with patches (all components)',
             [
                 {
@@ -199,6 +267,7 @@ $(function() {
         );
         render_table(
             'infra',
+            'Infrastructure',
             'Infrastructure Bugs',
             [
                 {
@@ -245,7 +314,7 @@ $(function() {
         $('#updated').text(new Date().toLocaleString());
     }
 
-    function render_table(id, subtitle, fields, callback) {
+    function render_table(id, title, subtitle, fields, callback) {
         let $container = $('#' + id);
         if ($container.length == 0) {
             console.error('failed to find #' + id);
@@ -265,7 +334,7 @@ $(function() {
             $container.append(
                 $('<div/>')
                     .addClass('header')
-                    .append($('<span/>').addClass('title').text(id.toUpperCase()))
+                    .append($('<span/>').addClass('title').text(title.toUpperCase()))
                     .append($('<span/>').addClass('count').text('(' + data.length + ')'))
                     .append($('<span/>').addClass('subtitle').text(subtitle))
             );
