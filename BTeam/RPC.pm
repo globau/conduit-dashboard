@@ -38,7 +38,7 @@ sub pending {
 
     $class->_last_comments($result);
     $result = $class->_prepare($result, 'last_comment_time_age');
-    $app->render( text => j($result), format => 'json' );
+    $app->render( json => $result );
 }
 
 sub pending_pri {
@@ -76,7 +76,7 @@ sub pending_pri {
 
     $class->_last_comments($result);
     $result = $class->_prepare($result, 'last_comment_time_age');
-    $app->render( text => j($result), format => 'json' );
+    $app->render( json => $result );
 }
 
 sub in_progress {
@@ -111,7 +111,7 @@ sub in_progress {
         $bug->{state_date} = $bug->{last_comment_time};
     }
     $result = $class->_prepare($result, 'last_comment_time_age');
-    $app->render( text => j($result), format => 'json' );
+    $app->render( json => $result );
 }
 
 sub in_dev {
@@ -139,7 +139,7 @@ sub in_dev {
         $bug->{state_date} = $bug->{last_comment_time};
         push @$result, $bug;
     }
-    $app->render( text => j($result), format => 'json' );
+    $app->render( json => $result );
 }
 
 sub stalled {
@@ -161,7 +161,7 @@ sub stalled {
         push @$result, $bug;
     }
     $result = $class->_prepare($result, 'needinfo_time_age');
-    $app->render( text => j($result), format => 'json' );
+    $app->render( json => $result );
 }
 
 sub infra {
@@ -198,7 +198,7 @@ sub infra {
         $bug->{state_date} = $bug->{last_comment_time};
     }
     $result = $class->_prepare($result, 'creation_time_age');
-    $app->render( text => j($result), format => 'json' );
+    $app->render( json => $result );
 }
 
 sub all {
@@ -212,7 +212,7 @@ sub all {
             'Infrastructure',
         ]
     );
-    $app->render( text => j($class->_prepare($bugs)), format => 'json' );
+    $app->render( json => $class->_prepare($bugs) );
 }
 
 sub _bugs {
