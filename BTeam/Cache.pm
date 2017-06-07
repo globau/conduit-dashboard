@@ -2,7 +2,8 @@ package BTeam::Cache;
 use strict;
 
 use FindBin qw($RealBin);
-use Mojo::Util qw(md5_sum slurp spurt);
+use Mojo::File;
+use Mojo::Util qw(md5_sum);
 
 use constant LIFETIME_MINUTES => 5;
 
@@ -17,13 +18,13 @@ sub instance {
 sub get {
     my ($class, $key) = @_;
     my $filename = $class->filename($key);
-    return -e $filename ? slurp($filename) : undef;
+    return -e $filename ? Mojo::File->new($filename)->slurp : undef;
 }
 
 sub put {
     my ($class, $key, $value) = @_;
     my $filename = $class->filename($key);
-    spurt($value, $filename);
+    Mojo::File->new($filename)->spurt($value);
 }
 
 sub delete_stale {

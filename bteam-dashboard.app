@@ -1,8 +1,10 @@
 #!/usr/bin/env perl
-BEGIN { $ENV{MOJO_MODE} = 'production'; }
+use local::lib;
+
 use Mojolicious::Lite;
 
 app->secrets('!bteam!');
+$0 = 'bteam-dashboard.app';
 
 get '/' => 'index';
 

@@ -4,10 +4,10 @@ use feature 'state';
 
 use BTeam::Cache;
 use FindBin qw($RealBin);
+use Mojo::File;
 use Mojo::JSON qw(j);
 use Mojo::URL;
 use Mojo::UserAgent;
-use Mojo::Util qw(slurp);
 
 my $_instance;
 sub instance {
@@ -26,7 +26,7 @@ sub rest {
     state $api_key;
     if (!defined $api_key) {
         if (-e $RealBin . '/api-key') {
-            chomp($api_key = slurp($RealBin . '/api-key'));
+            chomp($api_key = Mojo::File->new($RealBin . '/api-key')->slurp);
         } else {
             $api_key = 0;
         }
