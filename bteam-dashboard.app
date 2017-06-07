@@ -2,6 +2,8 @@
 use local::lib;
 
 use FindBin qw( $RealBin );
+use lib $RealBin;
+
 use Mojo::File;
 use Mojolicious::Lite;
 
