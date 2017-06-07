@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
 use local::lib;
 
+use FindBin qw( $RealBin );
 use Mojo::File;
 use Mojolicious::Lite;
 
