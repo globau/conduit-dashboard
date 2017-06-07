@@ -1,10 +1,14 @@
 #!/usr/bin/env perl
 use local::lib;
 
+use Mojo::File;
 use Mojolicious::Lite;
 
 app->secrets('!bteam!');
 $0 = 'bteam-dashboard.app';
+if (($ARGV[0] // '') eq 'daemon' && app->mode eq 'production') {
+    Mojo::File->new("$RealBin/bteam-dashboard.app.pid")->spurt("$$\n");
+}
 
 get '/' => 'index';
 
