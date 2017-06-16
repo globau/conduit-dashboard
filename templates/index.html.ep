@@ -3,6 +3,7 @@
 
 <head>
   <title>bteam dashboard</title>
+  <link rel="shortcut icon" href="static/bmo.svg">
   %= stylesheet_file 'style.css'
   %= javascript 'https://code.jquery.com/jquery-2.2.0.min.js'
   %= javascript_file 'stupidtable.min.js'
