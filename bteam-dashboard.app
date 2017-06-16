@@ -30,17 +30,17 @@ group {
 
 helper javascript_file => sub {
     my ($c, $file) = @_;
-    my $mtime = app->static->file($file)->mtime;
+    my $mtime = app->static->file('static/' . $file)->mtime;
     return Mojo::ByteStream->new(
-        '<script src="' . $file . '?' . $mtime . '"></script>'
+        '<script src="static/' . $file . '?' . $mtime . '"></script>'
     );
 };
 
 helper stylesheet_file => sub {
     my ($c, $file) = @_;
-    my $mtime = app->static->file($file)->mtime;
+    my $mtime = app->static->file('static/' . $file)->mtime;
     return Mojo::ByteStream->new(
-        '<link href="' . $file . '?' . $mtime . '" rel="stylesheet">'
+        '<link href="static/' . $file . '?' . $mtime . '" rel="stylesheet">'
     );
 };
 
