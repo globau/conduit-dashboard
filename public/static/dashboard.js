@@ -62,7 +62,7 @@ $(function() {
         render_table(
             'pending_pri',
             'Pending',
-            'Unassigned bugs (bugs with a priority set)',
+            'Unassigned bugs (bugs that are P1 or P2)',
             [
                 {
                     label: 'ID',

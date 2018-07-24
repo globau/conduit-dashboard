@@ -51,7 +51,7 @@ sub pending_pri {
         'Extensions: MozProjectReview',
     );
 
-    my $bugs = $class->_bugs(priority => [qw( P1 P2 P3 P4 )]);
+    my $bugs = $class->_bugs(priority => [qw( P1 P2 )]);
     BUG: foreach my $bug (@$bugs) {
         # skip assigned bugs
         next if $bug->{assigned_to} ne 'nobody@mozilla.org';
