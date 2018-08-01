@@ -6,33 +6,15 @@ use BTeam::Constants;
 use BTeam::Date;
 use Mojo::JSON qw(j);
 
-sub pending {
+sub untriaged {
     my ($class, $app) = @_;
     my $result;
 
     my $bugs = $class->_bugs(
-        component => [
-            'Administration',
-            'Custom Bug Entry Forms',
-            'Extensions: MozProjectReview',
-        ]
-    );
+        keywords => 'conduit-triaged',
+        keywords_type => 'nowords',
+        );
     BUG: foreach my $bug (@$bugs) {
-        # skip assigned bugs
-        next if $bug->{assigned_to} ne 'nobody@mozilla.org';
-
-        # a due_date means it has been answererd
-        next if $bug->{cf_due_date};
-        delete $bug->{cf_due_date};
-
-        # skip needinfo
-        foreach my $flag (@{ $bug->{flags} }) {
-            next unless $flag->{name} eq 'needinfo';
-            my $requestee = $flag->{requestee};
-            next BUG unless grep { $requestee eq $_ } BTEAM;
-        }
-        delete $bug->{flags};
-
         push @$result, $bug;
     }
 
@@ -41,104 +23,20 @@ sub pending {
     $app->render( json => $result );
 }
 
-sub pending_pri {
-    my ($class, $app) = @_;
-    my $result;
-
-    my @ignore = (
-        'Administration',
-        'Custom Bug Entry Forms',
-        'Extensions: MozProjectReview',
-    );
-
-    my $bugs = $class->_bugs(priority => [qw( P1 P2 )]);
-    BUG: foreach my $bug (@$bugs) {
-        # skip assigned bugs
-        next if $bug->{assigned_to} ne 'nobody@mozilla.org';
-
-        # skip ignored components
-        next if grep { $bug->{component} eq $_ } @ignore;
-
-        # a due_date means it has been answererd
-        next if $bug->{cf_due_date};
-        delete $bug->{cf_due_date};
-
-        # skip needinfo
-        foreach my $flag (@{ $bug->{flags} }) {
-            next unless $flag->{name} eq 'needinfo';
-            my $requestee = $flag->{requestee};
-            next BUG unless grep { $requestee eq $_ } BTEAM;
-        }
-        delete $bug->{flags};
-
-        push @$result, $bug;
-    }
-
-    $class->_last_comments($result);
-    $result = $class->_prepare($result, 'last_comment_time_age');
-    $app->render( json => $result );
-}
-
-sub in_progress {
+sub p1 {
     my ($class, $app) = @_;
     my $result;
 
     my $bugs = $class->_bugs(
-        component => [
-            'Administration',
-            'Custom Bug Entry Forms',
-            'Extensions: MozProjectReview',
-            'Infrastructure',
-        ]
-    );
+        keywords => 'conduit-triaged',
+        priority => 'P1',
+        );
     BUG: foreach my $bug (@$bugs) {
-        # skip unassigned bugs
-        next if
-            $bug->{assigned_to} eq 'nobody@mozilla.org'
-            && $bug->{cf_due_date} eq '';
-
-        # skip needinfo
-        foreach my $flag (@{ $bug->{flags} }) {
-            next BUG if $flag->{name} eq 'needinfo';
-        }
-        delete $bug->{flags};
-
         push @$result, $bug;
     }
 
     $class->_last_comments($result);
-    foreach my $bug (@$result) {
-        $bug->{state_date} = $bug->{last_comment_time};
-    }
     $result = $class->_prepare($result, 'last_comment_time_age');
-    $app->render( json => $result );
-}
-
-sub in_dev {
-    my ($class, $app) = @_;
-    my $result;
-
-    my $bugs;
-    BUG: foreach my $bug (@{ $class->_bugs_with_attachments() }) {
-        # skip unassigned bugs
-        next if $bug->{assigned_to} eq 'nobody@mozilla.org';
-
-        # skip needinfo
-        foreach my $flag (@{ $bug->{flags} }) {
-            next BUG if $flag->{name} eq 'needinfo';
-        }
-        delete $bug->{flags};
-
-        push @$bugs, $bug;
-    }
-
-    $class->_last_comments($bugs);
-    $bugs = $class->_prepare($bugs, 'last_comment_time_age');
-    foreach my $bug (@$bugs) {
-        next if $bug->{last_comment_time_age} < 60 * 60 * 24 * 14;
-        $bug->{state_date} = $bug->{last_comment_time};
-        push @$result, $bug;
-    }
     $app->render( json => $result );
 }
 
@@ -151,7 +49,6 @@ sub stalled {
         foreach my $flag (@{ $bug->{flags} }) {
             next unless $flag->{name} eq 'needinfo';
             my $requestee = $flag->{requestee};
-            next BUG if grep { $requestee eq $_ } BTEAM;
             $bug->{needinfo_time} = $flag->{creation_date};
             $bug->{needinfo} = $requestee;
         }
@@ -164,55 +61,37 @@ sub stalled {
     $app->render( json => $result );
 }
 
-sub infra {
+sub stories {
     my ($class, $app) = @_;
     my $result;
 
-    my $bugs = $class->_bugs(component => ['Infrastructure']);
+    my $bugs = $class->_bugs(
+        keywords => 'conduit-triaged,conduit-story',
+    );
     BUG: foreach my $bug (@$bugs) {
-        # skip bugs with open blockers
-        # because we don't authentiate, we can't tell if non-public bugs are
-        # resolved.  assume they are resolved.
-        if (@{ $bug->{depends_on} }) {
-            my $depends_on_bugs = BTeam::Bugzilla->search({
-                id              => join(',', @{ $bug->{depends_on} }),
-                include_fields  => 'id',
-                bug_status      => '__closed__',
-            });
-            next if @$depends_on_bugs == @{ $bug->{depends_on} };
-        }
-
-        # skip needinfo
-        foreach my $flag (@{ $bug->{flags} }) {
-            next unless $flag->{name} eq 'needinfo';
-            $bug->{needinfo_time} = $flag->{creation_date};
-            $bug->{needinfo} = $flag->{requestee};
-        }
-        delete $bug->{flags};
-
         push @$result, $bug;
     }
 
     $class->_last_comments($result);
-    foreach my $bug (@$result) {
-        $bug->{state_date} = $bug->{last_comment_time};
-    }
-    $result = $class->_prepare($result, 'creation_time_age');
+    $result = $class->_prepare($result, 'last_comment_time_age');
     $app->render( json => $result );
 }
 
-sub all {
+sub upstream {
     my ($class, $app) = @_;
+    my $result;
 
     my $bugs = $class->_bugs(
-        component => [
-            'Administration',
-            'Custom Bug Entry Forms',
-            'Extensions: MozProjectReview',
-            'Infrastructure',
-        ]
+        keywords => 'conduit-triaged',
+        whiteboard => '[phabricator-upstream]',
     );
-    $app->render( json => $class->_prepare($bugs) );
+    BUG: foreach my $bug (@$bugs) {
+        push @$result, $bug;
+    }
+
+    $class->_last_comments($result);
+    $result = $class->_prepare($result, 'last_comment_time_age');
+    $app->render( json => $result );
 }
 
 sub _bugs {
@@ -222,7 +101,6 @@ sub _bugs {
             id
             summary
             creation_time
-            cf_due_date
             component
             flags
             status
@@ -230,8 +108,9 @@ sub _bugs {
             depends_on
             groups
             priority
+            url
         )),
-        product         => 'bugzilla.mozilla.org',
+        product         => 'Conduit',
         bug_status      => '__open__',
         @args,
     });
@@ -253,6 +132,7 @@ sub _bugs_with_attachments {
             status
             assigned_to
             depends_on
+            url
         )),
         product         => 'bugzilla.mozilla.org',
         bug_status      => '__open__',
@@ -297,13 +177,18 @@ sub _last_comments {
 sub _prepare {
     my ($class, $bugs, $sort_field) = @_;
 
-    # fix dates
     my $now = time();
     foreach my $bug (@$bugs) {
+        # fix dates
         foreach my $field (qw(creation_time cf_due_date last_comment_time needinfo_time)) {
             next unless exists $bug->{$field} && $bug->{$field};
             $bug->{$field . '_epoch'} = BTeam::Date->new($bug->{$field})->epoch;
             $bug->{$field . '_age'} = $now - $bug->{$field . '_epoch'};
+        }
+
+        # url --> phid
+        if ($bug->{url} !~ m{^https://(?:admin\.phacility\.com/PHI|secure\.phabricator\.com/T)\d+$}) {
+            delete $bug->{url};
         }
     }
 

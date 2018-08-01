@@ -7,10 +7,6 @@ our @EXPORT = qw(
 );
 
 use constant BTEAM => qw(
-    dkl@mozilla.com
-    dylan@mozilla.com
-    glob@mozilla.com
-    mcote@mozilla.com
 );
 
 1;

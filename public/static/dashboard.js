@@ -1,8 +1,7 @@
-var g_pending_count = 0;
-var g_pending_pri_count = 0;
+var g_untriaged_count = 0;
 
 function update_title() {
-    document.title = 'bteam dashboard (' + (g_pending_count + g_pending_pri_count) + ')';
+    document.title = 'conduit dashboard (' + (g_untriaged_count) + ')';
 }
 
 $(function() {
@@ -10,9 +9,9 @@ $(function() {
 
     function render() {
         render_table(
-            'pending',
-            'Pending - High Priority',
-            'Unassigned bugs (time critical components)',
+            'untriaged',
+            'Untraiged',
+            '',
             [
                 {
                     label: 'ID',
@@ -55,14 +54,14 @@ $(function() {
                 }
             ],
             function(data) {
-                g_pending_count = data.length;
+                g_untriaged_count = data.length;
                 update_title();
             }
         );
         render_table(
-            'pending_pri',
-            'Pending',
-            'Unassigned bugs (bugs that are P1 or P2)',
+            'p1',
+            'P1',
+            '',
             [
                 {
                     label: 'ID',
@@ -109,16 +108,12 @@ $(function() {
                     sortValue: function(item) { return item.last_comment_time_age },
                     render: function(item) { return render_duration(item.last_comment_time_age) }
                 }
-            ],
-            function(data) {
-                g_pending_pri_count = data.length;
-                update_title();
-            }
+            ]
         );
         render_table(
-            'in_progress',
-            'In Progress',
-            'Assigned bugs being worked on (time critical components)',
+            'stories',
+            'Stories',
+            '',
             [
                 {
                     label: 'ID',
@@ -152,11 +147,10 @@ $(function() {
                     render: function(item) { return render_duration(item.creation_time_age) }
                 },
                 {
-                    label: 'Due',
-                    className: 'duration',
-                    sort: 'int',
-                    sortValue: function(item) { return item.cf_due_date_age },
-                    render: function(item) { return render_duration(item.cf_due_date_age) }
+                    label: 'Pri',
+                    className: 'priority',
+                    sort: 'string-ins',
+                    render: function(item) { return item.priority }
                 },
                 {
                     label: 'Commented',
@@ -168,10 +162,11 @@ $(function() {
                 }
             ]
         );
+
         render_table(
             'stalled',
             'Stalled',
-            'Bugs waiting on more information (all components)',
+            'Bugs waiting on more information',
             [
                 {
                     label: 'ID',
@@ -220,9 +215,9 @@ $(function() {
             ]
         );
         render_table(
-            'in_dev',
-            'In Development',
-            'Assigned bugs with patches (all components)',
+            'upstream',
+            'Upstream',
+            'Waiting on Phacility',
             [
                 {
                     label: 'ID',
@@ -243,10 +238,10 @@ $(function() {
                     render: function(item) { return render_user(item.assigned_to) }
                 },
                 {
-                    label: 'Comp',
-                    className: 'component',
+                    label: 'Upstream',
+                    className: 'upstream',
                     sort: 'string-ins',
-                    render: function(item) { return render_component(item.component) }
+                    render: function(item) { return render_upstream(item.url) }
                 },
                 {
                     label: 'Created',
@@ -256,50 +251,10 @@ $(function() {
                     render: function(item) { return render_duration(item.creation_time_age) }
                 },
                 {
-                    label: 'Commented',
-                    className: 'duration',
-                    sort: 'int',
-                    sorted: 'desc',
-                    sortValue: function(item) { return item.last_comment_time_age },
-                    render: function(item) { return render_duration(item.last_comment_time_age) }
-                }
-            ]
-        );
-        render_table(
-            'infra',
-            'Infrastructure',
-            'Infrastructure Bugs',
-            [
-                {
-                    label: 'ID',
-                    className: 'id',
-                    sort: 'int',
-                    render: function(item) { return render_bug(item.id) }
-                },
-                {
-                    label: 'Summary',
-                    className: 'summary',
+                    label: 'Pri',
+                    className: 'priority',
                     sort: 'string-ins',
-                    render: function(item) { return render_summary(item.summary) }
-                },
-                {
-                    label: 'Owner',
-                    className: 'person',
-                    sort: 'string-ins',
-                    render: function(item) { return render_user(item.assigned_to) }
-                },
-                {
-                    label: 'Created',
-                    className: 'duration',
-                    sort: 'int',
-                    sortValue: function(item) { return item.creation_time_age },
-                    render: function(item) { return render_duration(item.creation_time_age) }
-                },
-                {
-                    label: 'NeedInfo',
-                    className: 'person',
-                    sort: 'string-ins',
-                    render: function(item) { return render_user(item.needinfo) }
+                    render: function(item) { return item.priority }
                 },
                 {
                     label: 'Commented',
@@ -362,7 +317,7 @@ $(function() {
 
             $.each(data, function() {
                 let item = this;
-                let $tr = $('<tr/>');
+                let $tr = $('<tr/>').addClass('bug');
                 $.each(fields, function() {
                     let field = this;
                     let $td = $('<td/>').addClass(field.className).append(field.render(item));
@@ -422,6 +377,13 @@ $(function() {
             user.replace(/@mozilla\.(org|com)(\.uk)?$/, '')
                 .replace(/@gmail\.com$/, '')
         );
+    }
+
+    function render_upstream(url) {
+        if (!url) return '-';
+        return $('<a/>')
+            .attr('href', url)
+            .text(url.replace(/^.+\//, ''));
     }
 
     function render_duration(ss) {
