@@ -4,6 +4,14 @@ body {
     background: url(noise.png) #444;
 }
 
+a {
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
 table {
     width: 100%;
     max-width: 1200px;
@@ -68,7 +76,7 @@ tbody tr:nth-child(even) {
 }
 
 tr.bug:hover {
-    background-color: #fff2a3;
+    outline: 1px dotted #444;
 }
 
 .id {
