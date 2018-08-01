@@ -18,7 +18,7 @@
   <div id="upstream"></div>
   <div id="annotation">
     <span id="updated"></span><br>
-    <a href="https://github.com/globau/bteam-dashboard">source</a>
+    <a href="https://github.com/globau/bteam-dashboard/tree/conduit">source</a>
   </div>
 </body>
 
