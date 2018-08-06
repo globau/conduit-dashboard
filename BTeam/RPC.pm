@@ -96,24 +96,32 @@ sub upstream {
 
 sub _bugs {
     my ($class, @args) = @_;
+    my $include_fields  => join(',', qw(
+        id
+        summary
+        creation_time
+        component
+        flags
+        status
+        assigned_to
+        depends_on
+        groups
+        priority
+        url
+    ));
     my $bugs = BTeam::Bugzilla->search({
-        include_fields  => join(',', qw(
-            id
-            summary
-            creation_time
-            component
-            flags
-            status
-            assigned_to
-            depends_on
-            groups
-            priority
-            url
-        )),
+        include_fields  => $include_fields,
         product         => 'Conduit',
         bug_status      => '__open__',
         @args,
     });
+    push @$bugs, @{ BTeam::Bugzilla->search({
+        include_fields  => $include_fields,
+        product         =>'bugzilla.mozilla.org',
+        component       => 'Extensions: PhabBugz',
+        bug_status      => '__open__',
+        @args,
+    }) };
     foreach my $bug (@$bugs) {
         $bug->{summary} = '' if @{ $bug->{groups} // [] };
     }
