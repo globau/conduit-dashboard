@@ -194,7 +194,7 @@ sub _prepare {
 
     # sort
     if ($sort_field) {
-        return [ sort { $b->{creation_time_age} <=> $a->{creation_time_age} } @$bugs ];
+        return [ sort { $b->{$sort_field} <=> $a->{$sort_field} } @$bugs ];
     } else {
         return $bugs;
     }
