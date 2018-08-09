@@ -15,6 +15,14 @@ sub untriaged {
         keywords_type => 'nowords',
         );
     BUG: foreach my $bug (@$bugs) {
+        # skip needinfo
+        foreach my $flag (@{ $bug->{flags} }) {
+            next unless $flag->{name} eq 'needinfo';
+            my $requestee = $flag->{requestee};
+            next BUG unless grep { $requestee eq $_ } BTEAM;
+        }
+        delete $bug->{flags};
+
         push @$result, $bug;
     }
 
