@@ -1,1 +1,12 @@
 https://bteam-dashboard.glob.uno/
+
+For local development, you need Perl with (at least) Mojolicious and
+lib::local installed.  On Ubuntu 18.04, you can install the following packages:
+
+* perl
+* liblocal-lib-perl
+* libmojolicious-perl
+
+To run a local development server, execute
+
+    ./bteam-dashboard.app daemon
