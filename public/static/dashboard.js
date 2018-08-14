@@ -10,7 +10,7 @@ $(function() {
     function render() {
         render_table(
             'untriaged',
-            'Untraiged',
+            'Untriaged',
             '',
             [
                 {
