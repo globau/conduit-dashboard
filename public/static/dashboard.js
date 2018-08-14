@@ -76,6 +76,12 @@ $(function() {
                     render: function(item) { return render_summary(item.summary) }
                 },
                 {
+                    label: 'Owner',
+                    className: 'person',
+                    sort: 'string-ins',
+                    render: function(item) { return render_user(item.assigned_to) }
+                },
+                {
                     label: 'Comp',
                     className: 'component',
                     sort: 'string-ins',
