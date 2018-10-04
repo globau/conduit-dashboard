@@ -4,6 +4,8 @@ use local::lib;
 use FindBin qw( $RealBin );
 use lib $RealBin;
 
+use BTeam::Cache;
+use BTeam::RPC;
 use Mojo::File;
 use Mojolicious::Lite;
 
@@ -16,9 +18,6 @@ if (($ARGV[0] // '') eq 'daemon' && app->mode eq 'production') {
 get '/' => 'index';
 
 group {
-    under sub {
-        require BTeam::RPC;
-    };
     get '/rpc/pending'      => sub { BTeam::RPC->pending(@_)     };
     get '/rpc/pending_pri'  => sub { BTeam::RPC->pending_pri(@_) };
     get '/rpc/in_progress'  => sub { BTeam::RPC->in_progress(@_) };
@@ -42,6 +41,10 @@ helper stylesheet_file => sub {
     return Mojo::ByteStream->new(
         '<link href="static/' . $file . '?' . $mtime . '" rel="stylesheet">'
     );
+};
+
+hook after_render => sub {
+    BTeam::Cache->delete_stale();
 };
 
 app->start;

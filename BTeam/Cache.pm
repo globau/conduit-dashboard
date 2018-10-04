@@ -50,8 +50,4 @@ sub filename_prefix {
     return ($minutes - ($minutes % LIFETIME_MINUTES)) . '-';
 }
 
-END {
-    BTeam::Cache->delete_stale();
-}
-
 1;
