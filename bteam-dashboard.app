@@ -4,6 +4,8 @@ use local::lib;
 use FindBin qw( $RealBin );
 use lib $RealBin;
 
+use BTeam::Cache;
+use BTeam::RPC;
 use Mojo::File;
 use Mojolicious::Lite;
 
@@ -16,9 +18,6 @@ if (($ARGV[0] // '') eq 'daemon' && app->mode eq 'production') {
 get '/' => 'index';
 
 group {
-    under sub {
-        require BTeam::RPC;
-    };
     get '/rpc/untriaged' => sub { BTeam::RPC->untriaged(@_) };
     get '/rpc/p1'        => sub { BTeam::RPC->p1(@_)        };
     get '/rpc/stalled'   => sub { BTeam::RPC->stalled(@_)   };
@@ -40,6 +39,10 @@ helper stylesheet_file => sub {
     return Mojo::ByteStream->new(
         '<link href="static/' . $file . '?' . $mtime . '" rel="stylesheet">'
     );
+};
+
+hook after_render => sub {
+    BTeam::Cache->delete_stale();
 };
 
 app->start;
