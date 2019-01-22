@@ -1,5 +1,6 @@
 package BTeam::RPC;
 use strict;
+use utf8;
 
 use BTeam::Bugzilla;
 use BTeam::Constants;
@@ -36,10 +37,15 @@ sub p1 {
     my $result;
 
     my $bugs = $class->_bugs(
-        keywords => 'conduit-triaged',
-        priority => 'P1',
+        priority     => 'P1',
+        _include_bmo => 1,
         );
-    BUG: foreach my $bug (@$bugs) {
+    foreach my $bug (@$bugs) {
+        if ($bug->{product} eq 'bugzilla.mozilla.org') {
+            $bug->{component} = '⒝ ' . $bug->{component};
+        } else {
+            $bug->{component} = '⒞ ' . $bug->{component};
+        }
         push @$result, $bug;
     }
 
@@ -103,7 +109,7 @@ sub upstream {
 }
 
 sub _bugs {
-    my ($class, @args) = @_;
+    my ($class, %args) = @_;
     my $include_fields  => join(',', qw(
         id
         summary
@@ -117,19 +123,28 @@ sub _bugs {
         priority
         url
     ));
+    my $include_bmo = delete $args{_include_bmo};
     my $bugs = BTeam::Bugzilla->search({
         include_fields  => $include_fields,
         product         => 'Conduit',
         bug_status      => '__open__',
-        @args,
+        %args,
     });
     push @$bugs, @{ BTeam::Bugzilla->search({
         include_fields  => $include_fields,
         product         =>'bugzilla.mozilla.org',
         component       => 'Extensions: PhabBugz',
         bug_status      => '__open__',
-        @args,
+        %args,
     }) };
+    if ($include_bmo) {
+        push @$bugs, @{ BTeam::Bugzilla->search({
+            include_fields  => $include_fields,
+            product         =>'bugzilla.mozilla.org',
+            bug_status      => '__open__',
+            %args,
+        }) };
+    }
     foreach my $bug (@$bugs) {
         $bug->{summary} = '' if @{ $bug->{groups} // [] };
     }
