@@ -96,8 +96,7 @@ sub upstream {
     my $result;
 
     my $bugs = $class->_bugs(
-        keywords => 'conduit-triaged',
-        whiteboard => '[phabricator-upstream]',
+        keywords => 'conduit-triaged,conduit-upstream',
     );
     BUG: foreach my $bug (@$bugs) {
         push @$result, $bug;
