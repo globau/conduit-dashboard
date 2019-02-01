@@ -309,6 +309,7 @@ $(function() {
                 let $th = $('<th/>').addClass(field.className).text(field.label);
                 if (field.sort) {
                     $th.data('sort', field.sort);
+                    $th.data('sort-multicolumn', '0');
                     if (field.sorted) {
                         $th.data('sort-default', field.sorted);
                         $th.addClass('sorting-' + field.sorted);
