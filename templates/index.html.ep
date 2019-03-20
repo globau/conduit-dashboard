@@ -13,8 +13,9 @@
 <body>
   <div id="untriaged"></div>
   <div id="p1"></div>
+  <div id="tally"></div>
   <div id="stalled"></div>
-  <div id="stories"></div>
+  <div id="p2"></div>
   <div id="upstream"></div>
   <div id="annotation">
     <span id="updated"></span><br>

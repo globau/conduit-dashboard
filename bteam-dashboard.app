@@ -19,9 +19,10 @@ get '/' => 'index';
 
 group {
     get '/rpc/untriaged' => sub { BTeam::RPC->untriaged(@_) };
-    get '/rpc/p1'        => sub { BTeam::RPC->p1(@_)        };
     get '/rpc/stalled'   => sub { BTeam::RPC->stalled(@_)   };
-    get '/rpc/stories'   => sub { BTeam::RPC->stories(@_)   };
+    get '/rpc/tally'     => sub { BTeam::RPC->tally(@_)     };
+    get '/rpc/p1'        => sub { BTeam::RPC->p1(@_)        };
+    get '/rpc/p2'        => sub { BTeam::RPC->p2(@_)        };
     get '/rpc/upstream'  => sub { BTeam::RPC->upstream(@_)  };
 };
 

@@ -71,6 +71,10 @@ thead th.sorting-asc, thead th.sorting-desc {
     text-decoration: underline;
 }
 
+thead th.wide {
+    width: 100%;
+}
+
 tbody tr:nth-child(even) {
     background: #eee;
 }

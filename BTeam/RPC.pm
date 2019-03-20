@@ -6,6 +6,7 @@ use BTeam::Bugzilla;
 use BTeam::Constants;
 use BTeam::Date;
 use Mojo::JSON qw(j);
+use List::Util qw(any);
 
 sub untriaged {
     my ($class, $app) = @_;
@@ -54,6 +55,19 @@ sub p1 {
     $app->render( json => $result );
 }
 
+sub p2 {
+    my ($class, $app) = @_;
+    my $result;
+
+    $result = $class->_bugs(
+        priority     => 'P2',
+        );
+
+    $class->_last_comments($result);
+    $result = $class->_prepare($result, 'last_comment_time_age');
+    $app->render( json => $result );
+}
+
 sub stalled {
     my ($class, $app) = @_;
     my $result;
@@ -75,22 +89,6 @@ sub stalled {
     $app->render( json => $result );
 }
 
-sub stories {
-    my ($class, $app) = @_;
-    my $result;
-
-    my $bugs = $class->_bugs(
-        keywords => 'conduit-triaged,conduit-story',
-    );
-    BUG: foreach my $bug (@$bugs) {
-        push @$result, $bug;
-    }
-
-    $class->_last_comments($result);
-    $result = $class->_prepare($result, 'last_comment_time_age');
-    $app->render( json => $result );
-}
-
 sub upstream {
     my ($class, $app) = @_;
     my $result;
@@ -107,19 +105,40 @@ sub upstream {
     $app->render( json => $result );
 }
 
+sub tally {
+    my ($class, $app) = @_;
+    my $url = 'https://bugzilla.mozilla.org/buglist.cgi?query_format=advanced&product=Conduit&bug_status=__open__';
+    my $result = {
+        conduit => { '--' => 0, P1 => 0, P2 => 0, P3 => 0, P4 => 0, P5 => 0 },
+        upstream => { '--' => 0, P1 => 0, P2 => 0, P3 => 0, P4 => 0, P5 => 0 },
+        conduit_url => "$url&keywords=conduit-upstream&keywords_type=nowords",
+        upstream_url => "$url&keywords=conduit-upstream",
+    };
+
+    my $bugs = $class->_bugs();
+    foreach my $bug (@$bugs) {
+        my $is_upstream = any { $_ eq 'conduit-upstream' } @{ $bug->{keywords } };
+        my $product = $is_upstream ? 'upstream' : 'conduit';
+        $result->{$product}->{$bug->{priority}}++;
+    }
+
+    $app->render( json => $result );
+}
+
 sub _bugs {
     my ($class, %args) = @_;
-    my $include_fields  => join(',', qw(
-        id
-        summary
-        creation_time
-        component
-        flags
-        status
+    my $include_fields = join(',', qw(
         assigned_to
+        component
+        creation_time
         depends_on
+        flags
         groups
+        id
+        keywords,
         priority
+        status
+        summary
         url
     ));
     my $include_bmo = delete $args{_include_bmo};

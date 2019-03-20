@@ -117,8 +117,8 @@ $(function() {
             ]
         );
         render_table(
-            'stories',
-            'Stories',
+            'p2',
+            'P2',
             '',
             [
                 {
@@ -146,6 +146,12 @@ $(function() {
                     render: function(item) { return render_component(item.component) }
                 },
                 {
+                    label: 'Pri',
+                    className: 'priority',
+                    sort: 'string-ins',
+                    render: function(item) { return item.priority }
+                },
+                {
                     label: 'Created',
                     className: 'duration',
                     sort: 'int',
@@ -153,10 +159,10 @@ $(function() {
                     render: function(item) { return render_duration(item.creation_time_age) }
                 },
                 {
-                    label: 'Pri',
-                    className: 'priority',
+                    label: 'Commenter',
+                    className: 'person',
                     sort: 'string-ins',
-                    render: function(item) { return item.priority }
+                    render: function(item) { return render_user(item.last_commenter) }
                 },
                 {
                     label: 'Commented',
@@ -168,7 +174,6 @@ $(function() {
                 }
             ]
         );
-
         render_table(
             'stalled',
             'Stalled',
@@ -272,6 +277,7 @@ $(function() {
                 }
             ]
         );
+        render_tally();
         $('#updated').text(new Date().toLocaleString());
     }
 
@@ -356,6 +362,58 @@ $(function() {
         });
     }
 
+    function render_tally() {
+        let $container = $('#tally');
+        if ($container.length == 0) {
+            console.error('failed to find #tally');
+            return;
+        }
+        $container
+            .empty()
+            .append($('<div/>').addClass('loading').text('Loading...'));
+        $.getJSON('rpc/tally', function(data) {
+            if (data.error) {
+                console.error(data.error);
+                return;
+            }
+
+            $container.empty();
+
+            $container.append(
+                $('<div/>')
+                    .addClass('header')
+                    .append($('<span/>').addClass('title').text('Overview'))
+            );
+
+            let $table = $('<table/>');
+            $container.append($table);
+
+            let $tr = $('<tr/>').addClass('table-header');
+            $tr.append($('<th>Priority</th>'));
+            $tr.append($('<th>Conduit</th>'));
+            $tr.append($('<th>Upstream</th>'));
+            $tr.append($('<th class="wide"></th>'));
+            $table.append($('<thead/>').append($tr));
+
+            let $tbody = $('<tbody/>');
+            $.each(Object.keys(data.conduit), function() {
+                let priority = this;
+                let $tr = $('<tr/>');
+                $tr.append($('<td/>').addClass('priority').text(priority));
+                $.each(['conduit', 'upstream'], function() {
+                    let product = this;
+                    let url = data[product+'_url'] + '&priority=' + priority;
+                    $tr.append($('<td/>').append(render_link(data[product][priority], url)));
+                });
+                $tr.append($('<td/>'));
+                $tbody.append($tr);
+            });
+            $table.append($tbody);
+
+            $table.stupidtable();
+        });
+    }
+
     function render_summary(summary) {
         return summary === ''
             ? $('<i/>').text('confidential')
@@ -366,6 +424,12 @@ $(function() {
         return $('<a/>')
             .attr('href', 'https://bugzilla.mozilla.org/show_bug.cgi?id=' + id)
             .text(id);
+    }
+
+    function render_link(text, url) {
+        return $('<a/>')
+            .attr('href', url)
+            .text(text);
     }
 
     function render_component(component) {
