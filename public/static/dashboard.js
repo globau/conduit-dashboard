@@ -385,7 +385,7 @@ $(function() {
                     .append($('<span/>').addClass('title').text('Overview'))
             );
 
-            let $table = $('<table/>');
+            let $table = $('<table/>').addClass('tally');
             $container.append($table);
 
             let $tr = $('<tr/>').addClass('table-header');
@@ -403,7 +403,11 @@ $(function() {
                 $.each(['conduit', 'upstream'], function() {
                     let product = this;
                     let url = data[product+'_url'] + '&priority=' + priority;
-                    $tr.append($('<td/>').append(render_link(data[product][priority], url)));
+                    let $td = $('<td/>').append(render_link(data[product][priority], url));
+                    if (priority === 'P2' && product === 'conduit' && data[product][priority] > 20) {
+                        $td.addClass('excessive');
+                    }
+                    $tr.append($td);
                 });
                 $tr.append($('<td/>'));
                 $tbody.append($tr);

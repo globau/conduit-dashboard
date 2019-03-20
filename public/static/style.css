@@ -107,3 +107,12 @@ tr.bug:hover {
 #annotation, #annotation a {
     color: #aaa;
 }
+
+.tally td {
+    text-align: right;
+    padding-right: 2em;
+}
+
+.tally td.excessive a {
+    border-bottom: 1px solid red;
+}
