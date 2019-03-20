@@ -135,7 +135,7 @@ sub _bugs {
         flags
         groups
         id
-        keywords,
+        keywords
         priority
         status
         summary
@@ -163,10 +163,15 @@ sub _bugs {
             %args,
         }) };
     }
+    my @result;
     foreach my $bug (@$bugs) {
+        # meta bugs are always excluded
+        next if any { $_ eq 'meta' } @{ $bug->{keywords } };
+
         $bug->{summary} = '' if @{ $bug->{groups} // [] };
+        push @result, $bug;
     }
-    return $bugs;
+    return \@result;
 }
 
 sub _bugs_with_attachments {
