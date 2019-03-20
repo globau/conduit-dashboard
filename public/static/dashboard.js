@@ -61,7 +61,7 @@ $(function() {
         render_table(
             'p1',
             'P1',
-            '',
+            'Top Priority',
             [
                 {
                     label: 'ID',
@@ -119,7 +119,7 @@ $(function() {
         render_table(
             'p2',
             'P2',
-            '',
+            'Now and Next',
             [
                 {
                     label: 'ID',
