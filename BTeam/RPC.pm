@@ -140,6 +140,7 @@ sub _bugs {
         status
         summary
         url
+        product
     ));
     my $include_bmo = delete $args{_include_bmo};
     my $bugs = BTeam::Bugzilla->search({
@@ -172,46 +173,6 @@ sub _bugs {
         push @result, $bug;
     }
     return \@result;
-}
-
-sub _bugs_with_attachments {
-    my $all_bugs = BTeam::Bugzilla->search({
-        include_fields  => join(',', qw(
-            id
-            summary
-            creation_time
-            cf_due_date
-            component
-            flags
-            status
-            assigned_to
-            depends_on
-            url
-        )),
-        product         => 'bugzilla.mozilla.org',
-        bug_status      => '__open__',
-        f1              => 'attachments.ispatch',
-        o1              => 'equals',
-        v1              => '1',
-    });
-
-    # exclude bugs that only have obsolete attachments
-    my $attachments = BTeam::Bugzilla->attachments(
-        {
-            bug_ids         => [ map { $_->{id} } @$all_bugs ],
-            include_fields  => 'is_obsolete',
-        }
-    );
-    my $bugs = [];
-    foreach my $bug (@$all_bugs) {
-        my $obsolete_count = 0;
-        foreach my $attachment (@{ $attachments->{$bug->{id}} }) {
-            $obsolete_count++ if $attachment->{is_obsolete};
-        }
-        next if $obsolete_count == scalar @{ $attachments->{$bug->{id}} };
-        push @$bugs, $bug;
-    }
-    return $bugs;
 }
 
 sub _last_comments {
