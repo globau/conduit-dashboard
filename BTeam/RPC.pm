@@ -61,6 +61,8 @@ sub p2 {
 
     $result = $class->_bugs(
         priority     => 'P2',
+        keywords => 'conduit-upstream',
+        keywords_type => 'nowords',
         );
 
     $class->_last_comments($result);
