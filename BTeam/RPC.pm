@@ -109,22 +109,58 @@ sub upstream {
 
 sub tally {
     my ($class, $app) = @_;
-    my $url = 'https://bugzilla.mozilla.org/buglist.cgi?query_format=advanced&product=Conduit&bug_status=__open__';
-    my $result = {
-        conduit => { '--' => 0, P1 => 0, P2 => 0, P3 => 0, P4 => 0, P5 => 0 },
-        upstream => { '--' => 0, P1 => 0, P2 => 0, P3 => 0, P4 => 0, P5 => 0 },
-        conduit_url => "$url&keywords=conduit-upstream&keywords_type=nowords",
-        upstream_url => "$url&keywords=conduit-upstream",
-    };
+    my $base = 'https://bugzilla.mozilla.org/';
+    my @buckets = qw( assigned unassigned stalled upstream );
+    my @priorities = qw( -- P1 P2 P3 P4 P5 );
+
+    my %tally;
+    foreach my $bucket (@buckets) {
+        foreach my $pri (@priorities) {
+            $tally{$bucket}{$pri} = [];
+        }
+    }
 
     my $bugs = $class->_bugs();
     foreach my $bug (@$bugs) {
-        my $is_upstream = any { $_ eq 'conduit-upstream' } @{ $bug->{keywords } };
-        my $product = $is_upstream ? 'upstream' : 'conduit';
-        $result->{$product}->{$bug->{priority}}++;
+        my $priority = $bug->{priority};
+
+        my $stalled = 0;
+        foreach my $flag (@{ $bug->{flags} }) {
+            next unless $flag->{name} eq 'needinfo';
+            $stalled = 1;
+            last;
+        }
+
+        if (any { $_ eq 'conduit-upstream' } @{ $bug->{keywords } }) {
+            push @{ $tally{upstream}{$priority}}, $bug->{id};
+        } elsif ($stalled) {
+            push @{ $tally{stalled}{$priority}}, $bug->{id};
+        } elsif ($bug->{assigned_to} eq 'nobody@mozilla.org') {
+            push @{ $tally{unassigned}{$priority}}, $bug->{id};
+        } else {
+            push @{ $tally{assigned}{$priority}}, $bug->{id};
+        }
     }
 
-    $app->render( json => $result );
+    my @result;
+    push @result, ['Priority', map { ucfirst } @buckets];
+    foreach my $pri (@priorities) {
+        my @row;
+        foreach my $bucket (@buckets) {
+            my $count = scalar(@{ $tally{$bucket}{$pri} });
+            my $warn = ($pri eq 'P2') && ($count >= 20) ? 1 : 0;
+            my $url;
+            if ($count == 1) {
+                $url = $base . 'show_bug.cgi?id=' . $tally{$bucket}{$pri}->[0];
+            } else {
+                $url = $base . 'buglist.cgi?bug_id=' . join('%2C', @{ $tally{$bucket}{$pri} });
+            }
+            push @row, { priority => $pri, count => $count, warn => $warn, url => $url };
+        }
+        push @result, \@row;
+    }
+
+    $app->render( json => \@result );
 }
 
 sub _bugs {

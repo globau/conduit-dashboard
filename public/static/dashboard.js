@@ -388,23 +388,27 @@ $(function() {
             let $table = $('<table/>').addClass('tally');
             $container.append($table);
 
+            let columns = data.shift();
             let $tr = $('<tr/>').addClass('table-header');
-            $tr.append($('<th>Priority</th>'));
-            $tr.append($('<th>Conduit</th>'));
-            $tr.append($('<th>Upstream</th>'));
+            $.each(columns, function() {
+                $tr.append($('<th/>').text(this));
+            });
             $tr.append($('<th class="wide"></th>'));
             $table.append($('<thead/>').append($tr));
 
             let $tbody = $('<tbody/>');
-            $.each(Object.keys(data.conduit), function() {
-                let priority = this;
+            $.each(data, function() {
+                let row = this;
                 let $tr = $('<tr/>');
-                $tr.append($('<td/>').addClass('priority').text(priority));
-                $.each(['conduit', 'upstream'], function() {
-                    let product = this;
-                    let url = data[product+'_url'] + '&priority=' + priority;
-                    let $td = $('<td/>').append(render_link(data[product][priority], url));
-                    if (priority === 'P2' && product === 'conduit' && data[product][priority] > 20) {
+                let pri = false;
+                $.each(row, function() {
+                    let t = this;
+                    if (!pri) {
+                        $tr.append($('<td/>').addClass('priority').text(t.priority));
+                        pri = true;
+                    }
+                    let $td = $('<td/>').append(render_link(t.count, t.url));
+                    if (t.warn == 1) {
                         $td.addClass('excessive');
                     }
                     $tr.append($td);
