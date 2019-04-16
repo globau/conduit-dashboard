@@ -252,7 +252,7 @@ $(function() {
                     label: 'Upstream',
                     className: 'upstream',
                     sort: 'string-ins',
-                    render: function(item) { return render_upstream(item.url) }
+                    render: function(item) { return render_upstream(item.see_also) }
                 },
                 {
                     label: 'Created',
@@ -458,11 +458,15 @@ $(function() {
         );
     }
 
-    function render_upstream(url) {
-        if (!url) return '-';
-        return $('<a/>')
-            .attr('href', url)
-            .text(url.replace(/^.+\//, ''));
+    function render_upstream(see_also) {
+        if (!see_also.length) return '-';
+        var refs = [];
+        for (var url of see_also) {
+            refs.push($('<a/>').attr('href', url).text(url.replace(/^.+\//, '')));
+            refs.push(document.createTextNode(' '));
+        }
+        refs.pop();
+        return refs;
     }
 
     function render_duration(ss) {

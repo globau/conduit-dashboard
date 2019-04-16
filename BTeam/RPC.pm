@@ -6,7 +6,7 @@ use BTeam::Bugzilla;
 use BTeam::Constants;
 use BTeam::Date;
 use Mojo::JSON qw(j);
-use List::Util qw(any);
+use List::Util qw(any uniq);
 
 sub untriaged {
     my ($class, $app) = @_;
@@ -179,6 +179,7 @@ sub _bugs {
         summary
         url
         product
+        see_also
     ));
     my $include_bmo = delete $args{_include_bmo};
     my $bugs = BTeam::Bugzilla->search({
@@ -239,10 +240,15 @@ sub _prepare {
             $bug->{$field . '_age'} = $now - $bug->{$field . '_epoch'};
         }
 
-        # url --> phid
-        if ($bug->{url} !~ m{^https://(?:admin\.phacility\.com/PHI|secure\.phabricator\.com/T)\d+$}) {
-            delete $bug->{url};
-        }
+        # url -> see_also
+        my @see_also = @{ $bug->{see_also } };
+        push @see_also, $bug->{url} if $bug->{url};
+        delete $bug->{url};
+        $bug->{see_also} = [
+            grep { m{^https://(?:admin\.phacility\.com/PHI|secure\.phabricator\.com/T)\d+$} }
+            uniq
+            @see_also
+        ];
     }
 
     # sort
