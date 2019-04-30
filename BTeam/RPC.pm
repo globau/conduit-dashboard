@@ -120,7 +120,9 @@ sub tally {
         }
     }
 
-    my $bugs = $class->_bugs();
+    my $bugs = $class->_bugs(
+        _exclude_phabbugz => 1,
+    );
     foreach my $bug (@$bugs) {
         my $priority = $bug->{priority};
 
@@ -182,19 +184,25 @@ sub _bugs {
         see_also
     ));
     my $include_bmo = delete $args{_include_bmo};
+    my $exclude_phabbugz = delete $args{_exclude_phabbugz};
+
     my $bugs = BTeam::Bugzilla->search({
         include_fields  => $include_fields,
         product         => 'Conduit',
         bug_status      => '__open__',
         %args,
     });
-    push @$bugs, @{ BTeam::Bugzilla->search({
-        include_fields  => $include_fields,
-        product         =>'bugzilla.mozilla.org',
-        component       => 'Extensions: PhabBugz',
-        bug_status      => '__open__',
-        %args,
-    }) };
+
+    unless ($exclude_phabbugz) {
+        push @$bugs, @{ BTeam::Bugzilla->search({
+            include_fields  => $include_fields,
+            product         =>'bugzilla.mozilla.org',
+            component       => 'Extensions: PhabBugz',
+            bug_status      => '__open__',
+            %args,
+        }) };
+    }
+
     if ($include_bmo) {
         push @$bugs, @{ BTeam::Bugzilla->search({
             include_fields  => $include_fields,
@@ -203,6 +211,7 @@ sub _bugs {
             %args,
         }) };
     }
+
     my @result;
     foreach my $bug (@$bugs) {
         # meta bugs are always excluded
