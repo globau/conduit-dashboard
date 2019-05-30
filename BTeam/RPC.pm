@@ -213,7 +213,11 @@ sub _bugs {
     }
 
     my @result;
+    my %seen;
     foreach my $bug (@$bugs) {
+        next if exists $seen{$bug->{id}};
+        $seen{$bug->{id}} = 1;
+
         # meta bugs are always excluded
         next if any { $_ eq 'meta' } @{ $bug->{keywords } };
 
