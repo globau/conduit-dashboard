@@ -252,7 +252,7 @@ $(function() {
                     label: 'Upstream',
                     className: 'upstream',
                     sort: 'string-ins',
-                    render: function(item) { return render_upstream(item.see_also) }
+                    render: function(item) { return render_upstream(item) }
                 },
                 {
                     label: 'Created',
@@ -458,11 +458,15 @@ $(function() {
         );
     }
 
-    function render_upstream(see_also) {
-        if (!see_also.length) return '-';
+    function render_upstream(item) {
+        if (!item.see_also.length) return '-';
         var refs = [];
-        for (var url of see_also) {
+        for (var url of item.see_also) {
             refs.push($('<a/>').attr('href', url).text(url.replace(/^.+\//, '')));
+            refs.push(document.createTextNode(' '));
+        }
+        if (item.keywords.indexOf('conduit-upstream-pending') !== -1) {
+            refs.push('pending');
             refs.push(document.createTextNode(' '));
         }
         refs.pop();
