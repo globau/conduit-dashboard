@@ -28,7 +28,7 @@ sub rest {
         if (-e $RealBin . '/api-key') {
             chomp($api_key = Mojo::File->new($RealBin . '/api-key')->slurp);
         } else {
-            $api_key = 0;
+            $api_key = '';
         }
     }
 
@@ -44,7 +44,7 @@ sub rest {
         return j($cached);
     }
 
-    my $result = $self->_ua->get($url)->res->json;
+    my $result = $self->_ua->get($url, { X_BUGZILLA_API_KEY => $api_key })->res->json;
 
     BTeam::Cache->put($url, j($result));
     return $result;

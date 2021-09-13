@@ -18,13 +18,12 @@ if (($ARGV[0] // '') eq 'daemon' && app->mode eq 'production') {
 get '/' => 'index';
 
 group {
-    get '/rpc/pending'      => sub { BTeam::RPC->pending(@_)     };
-    get '/rpc/pending_pri'  => sub { BTeam::RPC->pending_pri(@_) };
-    get '/rpc/in_progress'  => sub { BTeam::RPC->in_progress(@_) };
-    get '/rpc/in_dev'       => sub { BTeam::RPC->in_dev(@_)      };
-    get '/rpc/stalled'      => sub { BTeam::RPC->stalled(@_)     };
-    get '/rpc/infra'        => sub { BTeam::RPC->infra(@_)       };
-    get '/rpc/all'          => sub { BTeam::RPC->all(@_)         };
+    get '/rpc/untriaged' => sub { BTeam::RPC->untriaged(@_) };
+    get '/rpc/stalled'   => sub { BTeam::RPC->stalled(@_)   };
+    get '/rpc/tally'     => sub { BTeam::RPC->tally(@_)     };
+    get '/rpc/p1'        => sub { BTeam::RPC->p1(@_)        };
+    get '/rpc/p2'        => sub { BTeam::RPC->p2(@_)        };
+    get '/rpc/upstream'  => sub { BTeam::RPC->upstream(@_)  };
 };
 
 helper javascript_file => sub {

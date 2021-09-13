@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <title>bteam dashboard</title>
+  <title>conduit dashboard</title>
   <link rel="shortcut icon" href="static/bmo.svg">
   %= stylesheet_file 'style.css'
   %= javascript 'https://code.jquery.com/jquery-2.2.0.min.js'
@@ -11,15 +11,15 @@
 </head>
 
 <body>
-  <div id="pending"></div>
-  <div id="pending_pri"></div>
-  <div id="in_progress"></div>
+  <div id="untriaged"></div>
+  <div id="p1"></div>
+  <div id="tally"></div>
   <div id="stalled"></div>
-  <div id="in_dev"></div>
-  <div id="infra"></div>
+  <div id="p2"></div>
+  <div id="upstream"></div>
   <div id="annotation">
     <span id="updated"></span><br>
-    <a href="https://github.com/globau/bteam-dashboard">source</a>
+    <a href="https://github.com/globau/bteam-dashboard/tree/conduit">source</a>
   </div>
 </body>
 

@@ -4,6 +4,14 @@ body {
     background: url(noise.png) #444;
 }
 
+a {
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
 table {
     width: 100%;
     max-width: 1200px;
@@ -17,7 +25,7 @@ table {
     padding: 7px;
     color: #fff;
     margin-bottom: 10px;
-    width: 100%;
+    width: calc(100% - 14px);
     max-width: 1186px;
 }
 
@@ -25,7 +33,7 @@ table {
     background-color: #6A7B86;
     background-image: linear-gradient(#6A7B86, #424F5A);
     padding: 7px;
-    width: 100%;
+    width: calc(100% - 14px);
     max-width: 1186px;
 }
 
@@ -63,8 +71,16 @@ thead th.sorting-asc, thead th.sorting-desc {
     text-decoration: underline;
 }
 
+thead th.wide {
+    width: 100%;
+}
+
 tbody tr:nth-child(even) {
     background: #eee;
+}
+
+tr.bug:hover {
+    outline: 1px dotted #444;
 }
 
 .id {
@@ -90,4 +106,13 @@ tbody tr:nth-child(even) {
 
 #annotation, #annotation a {
     color: #aaa;
+}
+
+.tally td {
+    text-align: right;
+    padding-right: 2em;
+}
+
+.tally td.excessive a {
+    border-bottom: 1px solid red;
 }
