@@ -11,6 +11,7 @@ app->secrets('!Dash!');
 if (($ARGV[0] // '') eq 'daemon' && app->mode eq 'production') {
     Mojo::File->new("$RealBin/dashboard.app.pid")->spurt("$$\n");
 }
+Dash::Cache->init();
 
 get '/' => 'index';
 

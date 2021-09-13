@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+docker build \
+    -t conduit-dashboard.glob.uno \
+    . \
+&& docker run \
+    --rm \
+    -ti \
+    -p 8000:8000 \
+    --name conduit-dashboard.glob.uno \
+    conduit-dashboard.glob.uno

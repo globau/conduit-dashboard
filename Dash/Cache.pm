@@ -15,6 +15,11 @@ sub instance {
     }, $class);
 }
 
+sub init {
+    my ($class) = @_;
+    mkdir($class->instance->{path});
+}
+
 sub get {
     my ($class, $key) = @_;
     my $filename = $class->filename($key);
