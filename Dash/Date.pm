@@ -1,4 +1,4 @@
-package BTeam::Date;
+package Dash::Date;
 use Mojo::Base 'Mojo::Date';
 
 use Time::Local 'timegm';

@@ -1,4 +1,4 @@
-package BTeam::Cache;
+package Dash::Cache;
 use strict;
 
 use FindBin qw($RealBin);

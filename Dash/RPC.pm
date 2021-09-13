@@ -1,10 +1,10 @@
-package BTeam::RPC;
+package Dash::RPC;
 use strict;
 use utf8;
 
-use BTeam::Bugzilla;
-use BTeam::Constants;
-use BTeam::Date;
+use Dash::Bugzilla;
+use Dash::Constants;
+use Dash::Date;
 use Mojo::JSON qw(j);
 use List::Util qw(any uniq);
 
@@ -21,7 +21,7 @@ sub untriaged {
         foreach my $flag (@{ $bug->{flags} }) {
             next unless $flag->{name} eq 'needinfo';
             my $requestee = $flag->{requestee};
-            next BUG unless grep { $requestee eq $_ } BTEAM;
+            next BUG unless grep { $requestee eq $_ } Dash;
         }
         delete $bug->{flags};
 
@@ -186,7 +186,7 @@ sub _bugs {
     my $include_bmo = delete $args{_include_bmo};
     my $exclude_phabbugz = delete $args{_exclude_phabbugz};
 
-    my $bugs = BTeam::Bugzilla->search({
+    my $bugs = Dash::Bugzilla->search({
         include_fields  => $include_fields,
         product         => 'Conduit',
         bug_status      => '__open__',
@@ -194,7 +194,7 @@ sub _bugs {
     });
 
     unless ($exclude_phabbugz) {
-        push @$bugs, @{ BTeam::Bugzilla->search({
+        push @$bugs, @{ Dash::Bugzilla->search({
             include_fields  => $include_fields,
             product         =>'bugzilla.mozilla.org',
             component       => 'Extensions: PhabBugz',
@@ -204,7 +204,7 @@ sub _bugs {
     }
 
     if ($include_bmo) {
-        push @$bugs, @{ BTeam::Bugzilla->search({
+        push @$bugs, @{ Dash::Bugzilla->search({
             include_fields  => $include_fields,
             product         =>'bugzilla.mozilla.org',
             bug_status      => '__open__',
@@ -229,7 +229,7 @@ sub _bugs {
 
 sub _last_comments {
     my ($class, $bugs) = @_;
-    my $comments = BTeam::Bugzilla->comments({
+    my $comments = Dash::Bugzilla->comments({
         bug_ids => [ map { $_->{id} } @$bugs ],
         include_fields  => ['author', 'time'],
     });
@@ -249,7 +249,7 @@ sub _prepare {
         # fix dates
         foreach my $field (qw(creation_time cf_due_date last_comment_time needinfo_time)) {
             next unless exists $bug->{$field} && $bug->{$field};
-            $bug->{$field . '_epoch'} = BTeam::Date->new($bug->{$field})->epoch;
+            $bug->{$field . '_epoch'} = Dash::Date->new($bug->{$field})->epoch;
             $bug->{$field . '_age'} = $now - $bug->{$field . '_epoch'};
         }
 

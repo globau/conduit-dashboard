@@ -1,8 +1,8 @@
-package BTeam::Bugzilla;
+package Dash::Bugzilla;
 use strict;
 use feature 'state';
 
-use BTeam::Cache;
+use Dash::Cache;
 use FindBin qw($RealBin);
 use Mojo::File;
 use Mojo::JSON qw(j);
@@ -23,30 +23,19 @@ sub _ua {
 sub rest {
     my ($self, $method, $params) = @_;
 
-    state $api_key;
-    if (!defined $api_key) {
-        if (-e $RealBin . '/api-key') {
-            chomp($api_key = Mojo::File->new($RealBin . '/api-key')->slurp);
-        } else {
-            $api_key = '';
-        }
-    }
-
     my $url = Mojo::URL->new('https://bugzilla.mozilla.org/rest/' . $method);
     foreach my $name (sort keys %$params) {
         $url->query->param($name => $params->{$name});
     }
-    if ($api_key) {
-        $url->query->param(api_key => $api_key);
-    }
+    $url = $url->to_string;
 
-    if (my $cached = BTeam::Cache->get($url)) {
+    if (my $cached = Dash::Cache->get($url)) {
         return j($cached);
     }
 
-    my $result = $self->_ua->get($url, { X_BUGZILLA_API_KEY => $api_key })->res->json;
-
-    BTeam::Cache->put($url, j($result));
+    my $api_key = $ENV{'API-KEY'} // '';
+    my $result = $self->_ua->get($url, { 'X-BUGZILLA-API-KEY' => $api_key })->result->json;
+    Dash::Cache->put($url, j($result));
     return $result;
 }
 

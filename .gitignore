@@ -1,5 +1,2 @@
-cache/*.cache
-*.swp
-api-key
-bteam-dashboard.app.pid
-log/
+cache
+dashboard.app.pid

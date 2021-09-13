@@ -1,12 +1,12 @@
-package BTeam::Constants;
+package Dash::Constants;
 use strict;
 use base qw(Exporter);
 
 our @EXPORT = qw(
-    BTEAM
+    Dash
 );
 
-use constant BTEAM => qw(
+use constant Dash => qw(
 );
 
 1;

@@ -1,29 +1,26 @@
 #!/usr/bin/env perl
-use local::lib;
-
 use FindBin qw( $RealBin );
 use lib $RealBin;
 
-use BTeam::Cache;
-use BTeam::RPC;
+use Dash::Cache;
+use Dash::RPC;
 use Mojo::File;
 use Mojolicious::Lite;
 
-app->secrets('!bteam!');
-$0 = 'bteam-dashboard.app';
+app->secrets('!Dash!');
 if (($ARGV[0] // '') eq 'daemon' && app->mode eq 'production') {
-    Mojo::File->new("$RealBin/bteam-dashboard.app.pid")->spurt("$$\n");
+    Mojo::File->new("$RealBin/dashboard.app.pid")->spurt("$$\n");
 }
 
 get '/' => 'index';
 
 group {
-    get '/rpc/untriaged' => sub { BTeam::RPC->untriaged(@_) };
-    get '/rpc/stalled'   => sub { BTeam::RPC->stalled(@_)   };
-    get '/rpc/tally'     => sub { BTeam::RPC->tally(@_)     };
-    get '/rpc/p1'        => sub { BTeam::RPC->p1(@_)        };
-    get '/rpc/p2'        => sub { BTeam::RPC->p2(@_)        };
-    get '/rpc/upstream'  => sub { BTeam::RPC->upstream(@_)  };
+    get '/rpc/untriaged' => sub { Dash::RPC->untriaged(@_) };
+    get '/rpc/stalled'   => sub { Dash::RPC->stalled(@_)   };
+    get '/rpc/tally'     => sub { Dash::RPC->tally(@_)     };
+    get '/rpc/p1'        => sub { Dash::RPC->p1(@_)        };
+    get '/rpc/p2'        => sub { Dash::RPC->p2(@_)        };
+    get '/rpc/upstream'  => sub { Dash::RPC->upstream(@_)  };
 };
 
 helper javascript_file => sub {
@@ -43,7 +40,7 @@ helper stylesheet_file => sub {
 };
 
 hook after_render => sub {
-    BTeam::Cache->delete_stale();
+    Dash::Cache->delete_stale();
 };
 
 app->start;
