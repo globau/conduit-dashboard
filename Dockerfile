@@ -1,12 +1,10 @@
-FROM alpine:3.14
+# builder
+
+FROM alpine:3.14 AS builder
 
 RUN apk update \
     && apk upgrade
-RUN apk add --no-cache curl make wget perl perl-dev openssl openssl-dev zlib-dev build-base
-
-RUN addgroup -g 1000 app && \
-    adduser -D -u 1000 -G app app
-RUN mkdir -p /app
+RUN apk add curl make wget perl perl-dev openssl openssl-dev zlib-dev build-base
 
 RUN curl -LO https://raw.githubusercontent.com/miyagawa/cpanminus/master/cpanm \
     && chmod +x cpanm \
@@ -14,14 +12,24 @@ RUN curl -LO https://raw.githubusercontent.com/miyagawa/cpanminus/master/cpanm \
     && rm -rf ./cpanm /root/.cpanm
 ENV PERL_CPANM_OPT --mirror https://cpan.metacpan.org --mirror-only --notest
 
+RUN mkdir /app
 COPY cpanfile /app
-RUN cpanm --installdeps /app
+RUN cpanm --verbose --installdeps --notest --no-man-pages /app
 
-RUN apk del make build-base
-RUN rm -rf /root/.cpanm /usr/local/share/man
+# deploy
 
-COPY ./ /app
-RUN chown -R app:app /app
+FROM alpine:3.14 AS deploy
+
+RUN apk update \
+    && apk upgrade
+RUN apk add perl
+
+RUN addgroup -g 1000 app && \
+    adduser -D -u 1000 -G app app
+
+COPY --from=builder /usr/local/lib/perl5/site_perl /usr/local/lib/perl5/site_perl
+COPY --from=builder /usr/local/share/perl5/site_perl /usr/local/share/perl5/site_perl
+COPY --chown=app:app ./ /app
 
 STOPSIGNAL SIGINT
 EXPOSE 8000
